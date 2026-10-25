@@ -23,14 +23,20 @@ const AUTH_PATHS = [PATHS.login, PATHS.signup, PATHS.verifyEmail];
 
 // Shell shared by every page: toast, top bar, and the global modals.
 function Layout() {
-  const { toast, activeModal, closeModal } = useApp();
+  const { toast, activeModal, closeModal, setActiveModal } = useApp();
   const { pathname } = useLocation();
 
-  // Navigating closes any open modal and returns to the top of the page.
+  // Navigating closes any open modal, or automatically opens profile modal if requested after auth/signup
   useEffect(() => {
-    closeModal();
+    const shouldOpenProfile = sessionStorage.getItem("openProfileAfterAuth") === "true";
+    if (shouldOpenProfile) {
+      sessionStorage.removeItem("openProfileAfterAuth");
+      setActiveModal("profile");
+    } else {
+      closeModal();
+    }
     window.scrollTo(0, 0);
-  }, [pathname, closeModal]);
+  }, [pathname, closeModal, setActiveModal]);
 
   return (
     <div className="cl-root">
@@ -45,14 +51,10 @@ function Layout() {
   );
 }
 
-// /medical and /graphic-design were separate HTML entry pages: open that course directly as a guest student.
-function DirectEntry({ to, user }) {
-  const { ensureGuestUser } = useApp();
-  useEffect(() => ensureGuestUser(user), [ensureGuestUser, user]);
+// /medical and /graphic-design entry redirects
+function DirectEntry({ to }) {
   return <Navigate to={to} replace />;
 }
-
-const DIRECT_ENTRY_USER = { name: "Graphic Design Student", email: "student@rightwayskillbuilder.com", role: "student" };
 
 export default function App() {
   return (
@@ -81,8 +83,8 @@ export default function App() {
             <Route path={PATHS.certificate} element={<CertificatePage />} />
             <Route path={PATHS.admin} element={<AdminPage />} />
 
-            <Route path="/medical" element={<DirectEntry to={PATHS.medical} user={DIRECT_ENTRY_USER} />} />
-            <Route path="/graphic-design" element={<DirectEntry to={PATHS.graphicDesign} user={DIRECT_ENTRY_USER} />} />
+            <Route path="/medical" element={<DirectEntry to={PATHS.medical} />} />
+            <Route path="/graphic-design" element={<DirectEntry to={PATHS.graphicDesign} />} />
 
             <Route path="*" element={<Navigate to={PATHS.home} replace />} />
           </Route>

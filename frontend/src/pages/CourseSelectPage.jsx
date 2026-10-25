@@ -25,7 +25,7 @@ function WebTrackCard({ title, pct, onClick, colorClass, iconLabel }) {
 
 export default function CourseSelectPage() {
   const { statuses, cssStatuses, jsStatuses, setActiveModal } = useApp();
-  const { startCourse } = useCourseNav();
+  const { startCourse, requireAuthOrRedirect } = useCourseNav();
   const navigate = useNavigate();
 
   return (
@@ -77,9 +77,36 @@ export default function CourseSelectPage() {
             </div>
           </div>
           <div className="grid sm:grid-cols-3 gap-3">
-            <WebTrackCard title="HTML Track" pct={trackPercent(statuses, 10)} onClick={() => navigate(PATHS.track.html)} colorClass="bg-orange-500" iconLabel="HTML" />
-            <WebTrackCard title="CSS Track" pct={trackPercent(cssStatuses, 12)} onClick={() => navigate(PATHS.track.css)} colorClass="bg-blue-500" iconLabel="CSS" />
-            <WebTrackCard title="JavaScript Track" pct={trackPercent(jsStatuses, 6)} onClick={() => navigate(PATHS.track.js)} colorClass="bg-yellow-500" iconLabel="JS" />
+            <WebTrackCard
+              title="HTML Track"
+              pct={trackPercent(statuses, 10)}
+              onClick={() => {
+                if (!requireAuthOrRedirect(PATHS.track.html)) return;
+                navigate(PATHS.track.html);
+              }}
+              colorClass="bg-orange-500"
+              iconLabel="HTML"
+            />
+            <WebTrackCard
+              title="CSS Track"
+              pct={trackPercent(cssStatuses, 12)}
+              onClick={() => {
+                if (!requireAuthOrRedirect(PATHS.track.css)) return;
+                navigate(PATHS.track.css);
+              }}
+              colorClass="bg-blue-500"
+              iconLabel="CSS"
+            />
+            <WebTrackCard
+              title="JavaScript Track"
+              pct={trackPercent(jsStatuses, 6)}
+              onClick={() => {
+                if (!requireAuthOrRedirect(PATHS.track.js)) return;
+                navigate(PATHS.track.js);
+              }}
+              colorClass="bg-yellow-500"
+              iconLabel="JS"
+            />
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import GoogleIcon from "../components/GoogleIcon";
 import { useApp } from "../context/AppContext";
 import { PATHS } from "../utils/paths";
@@ -9,11 +9,30 @@ const inputCls = "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm";
 export default function LoginPage() {
   const { emailLogin, googleAuth } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get("returnTo") || sessionStorage.getItem("returnTo") || "";
+
+  useEffect(() => {
+    if (returnTo) {
+      sessionStorage.setItem("returnTo", returnTo);
+      sessionStorage.setItem("openProfileAfterAuth", "true");
+    }
+  }, [returnTo]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+
+  const handlePostAuth = () => {
+    const target = returnTo || sessionStorage.getItem("returnTo") || PATHS.home;
+    sessionStorage.setItem("openProfileAfterAuth", "true");
+    sessionStorage.removeItem("returnTo");
+    navigate(target);
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -22,11 +41,11 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await emailLogin(email.trim(), password.trim());
-      navigate(PATHS.home);
+      handlePostAuth();
     } catch (err) {
       if (err.requiresVerification) {
         navigate(
-          `${PATHS.verifyEmail}?email=${encodeURIComponent(err.email || email.trim())}&fromLogin=true&emailSent=${err.data?.emailSent !== false}&message=${encodeURIComponent(err.message || "")}`
+          `${PATHS.verifyEmail}?email=${encodeURIComponent(err.email || email.trim())}&fromLogin=true&emailSent=${err.data?.emailSent !== false}&message=${encodeURIComponent(err.message || "")}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ""}`
         );
         return;
       }
@@ -39,7 +58,7 @@ export default function LoginPage() {
     setGoogleBusy(true);
     try {
       await googleAuth();
-      navigate(PATHS.home);
+      handlePostAuth();
     } catch (err) {
       if (err.code !== "auth/popup-closed-by-user") setError(err.message || "Google sign-in failed. Please try again.");
       setGoogleBusy(false);
@@ -52,6 +71,14 @@ export default function LoginPage() {
         <div className="font-extrabold text-xl text-center mb-2">Rightway <span className="text-red-600">Skill Builder</span></div>
         <h1 className="text-2xl font-extrabold text-center mb-1">Welcome back</h1>
         <p className="text-center text-sm text-gray-600 mb-6">Continue learning and build your skills with interactive lessons.</p>
+
+        {/* Notice for Course Video / Lesson Visitors */}
+        {returnTo && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-xs px-3.5 py-2.5 rounded-xl mb-4 flex items-center gap-2 font-medium">
+            <span className="text-base">🎬</span>
+            <span>Please log in to continue watching course videos and start learning.</span>
+          </div>
+        )}
 
         <button type="button" disabled={googleBusy} onClick={google} className="w-full border border-gray-300 rounded-lg py-2.5 mb-5 font-semibold text-sm hover:bg-gray-50 flex items-center justify-center gap-2">
           <GoogleIcon />
@@ -73,7 +100,7 @@ export default function LoginPage() {
           {busy ? "Logging in..." : "Log In"}
         </button>
         <div className="text-center text-sm mt-5">
-          Don't have an account? <button type="button" className="text-red-600 font-semibold" onClick={() => navigate(PATHS.signup)}>Create one</button>
+          Don't have an account? <button type="button" className="text-red-600 font-semibold" onClick={() => navigate(returnTo ? `${PATHS.signup}?returnTo=${encodeURIComponent(returnTo)}` : PATHS.signup)}>Create one</button>
         </div>
       </form>
     </div>

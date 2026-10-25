@@ -8,25 +8,57 @@ import { PATHS } from "../utils/paths";
 export function useCourseNav() {
   const navigate = useNavigate();
   const app = useApp();
-  const { ensureGuestUser } = app;
+  const { user, showToast } = app;
+
+  // Verify real registered user (blocks guest access from directly watching/starting courses)
+  const requireAuthOrRedirect = useCallback(
+    (targetPath) => {
+      const isAuth = !!user && user.email !== "student@rightwayskillbuilder.com";
+      if (!isAuth) {
+        sessionStorage.setItem("returnTo", targetPath);
+        sessionStorage.setItem("openProfileAfterAuth", "true");
+        if (showToast) {
+          showToast("Please sign up first to watch course videos and start learning!");
+        }
+        navigate(`${PATHS.signup}?returnTo=${encodeURIComponent(targetPath)}`);
+        return false;
+      }
+      return true;
+    },
+    [user, navigate, showToast]
+  );
 
   const startCourse = useCallback(
     (courseId) => {
-      ensureGuestUser();
-      navigate(PATHS.course(courseId));
+      const targetPath = PATHS.course(courseId);
+      if (!requireAuthOrRedirect(targetPath)) return;
+      navigate(targetPath);
     },
-    [ensureGuestUser, navigate]
+    [requireAuthOrRedirect, navigate]
   );
 
   const launchCourseLevel = useCallback(
     (courseId, levelNum) => {
-      ensureGuestUser();
+      let targetPath = PATHS.courseLevel(courseId, levelNum || 1);
+      if (courseId === "medical_coding") {
+        targetPath = PATHS.lesson(28 + (levelNum || 1));
+      } else if (courseId === "graphic_design") {
+        targetPath = PATHS.lesson(43 + (levelNum || 1));
+      } else if (courseId === "adobe_photoshop" && levelNum === 1) {
+        targetPath = PATHS.lesson(46);
+      } else if (courseId === "adobe_illustrator" && levelNum === 1) {
+        targetPath = PATHS.lesson(44);
+      } else if (courseId === "coreldraw" && levelNum === 1) {
+        targetPath = PATHS.lesson(48);
+      }
+
+      if (!requireAuthOrRedirect(targetPath)) return;
 
       if (courseId === "medical_coding") {
         const prog = getMedicalProgress();
         prog.isStarted = true;
         saveMedicalProgress(prog);
-        return navigate(PATHS.lesson(28 + (levelNum || 1)));
+        return navigate(targetPath);
       }
 
       if (courseId === "graphic_design") {
@@ -37,7 +69,7 @@ export function useCourseNav() {
         } catch {
           /* ignore */
         }
-        return navigate(PATHS.lesson(43 + (levelNum || 1)));
+        return navigate(targetPath);
       }
 
       // Generic courses
@@ -46,14 +78,9 @@ export function useCourseNav() {
       if (!prog.currentLevel) prog.currentLevel = levelNum || 1;
       saveCourseProgress(courseId, prog);
 
-      // Suite courses reuse the Graphic Design video lessons for level 1.
-      if (courseId === "adobe_photoshop" && levelNum === 1) return navigate(PATHS.lesson(46));
-      if (courseId === "adobe_illustrator" && levelNum === 1) return navigate(PATHS.lesson(44));
-      if (courseId === "coreldraw" && levelNum === 1) return navigate(PATHS.lesson(48));
-
-      navigate(PATHS.courseLevel(courseId, levelNum || 1));
+      navigate(targetPath);
     },
-    [app, ensureGuestUser, navigate]
+    [app, requireAuthOrRedirect, navigate]
   );
 
   const launchCourseCurrentLevel = useCallback(
@@ -64,5 +91,5 @@ export function useCourseNav() {
     [app, launchCourseLevel]
   );
 
-  return { startCourse, launchCourseLevel, launchCourseCurrentLevel };
+  return { startCourse, launchCourseLevel, launchCourseCurrentLevel, requireAuthOrRedirect };
 }

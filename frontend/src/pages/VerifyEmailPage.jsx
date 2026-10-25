@@ -10,6 +10,7 @@ export default function VerifyEmailPage() {
   const emailParam = queryParams.get("email") || location.state?.email || "";
   const emailSentParam = queryParams.get("emailSent") !== "false" && location.state?.emailSent !== false;
   const messageParam = queryParams.get("message") || location.state?.message || "";
+  const returnToParam = queryParams.get("returnTo") || sessionStorage.getItem("returnTo") || "";
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-8 bg-gray-50/50">
@@ -17,8 +18,9 @@ export default function VerifyEmailPage() {
         initialEmail={emailParam}
         initialEmailSent={emailSentParam}
         initialMessage={messageParam}
-        onSuccess={() => {
-          navigate(PATHS.home);
+        returnTo={returnToParam}
+        onSuccess={(data, target) => {
+          navigate(target || PATHS.home);
         }}
         onBack={() => {
           navigate(PATHS.login);

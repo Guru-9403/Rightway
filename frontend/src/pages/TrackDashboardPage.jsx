@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CertificateModal from "../components/modals/CertificateModal";
 import { useApp } from "../context/AppContext";
+import { useCourseNav } from "../hooks/useCourseNav";
 import { LESSONS_DATA } from "../data/lessons";
 import { PATHS } from "../utils/paths";
 import { isDone } from "../utils/progress";
@@ -45,6 +46,7 @@ function CertificateDoc({ courseName, onBack }) {
 export default function TrackDashboardPage({ courseName, statusKey, total, startId, nextPath }) {
   const app = useApp();
   const navigate = useNavigate();
+  const { requireAuthOrRedirect } = useCourseNav();
   const [certDoc, setCertDoc] = useState(false);
   const [certModal, setCertModal] = useState(false);
 
@@ -65,6 +67,12 @@ export default function TrackDashboardPage({ courseName, statusKey, total, start
     }
   }
   const nextLessonId = startId + nextIndex;
+
+  const handleOpenLesson = (lessonId) => {
+    const targetPath = PATHS.lesson(lessonId);
+    if (!requireAuthOrRedirect(targetPath)) return;
+    navigate(targetPath);
+  };
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-10">
@@ -91,7 +99,7 @@ export default function TrackDashboardPage({ courseName, statusKey, total, start
           <div
             key={lessonId}
             className={`flex items-center justify-between py-2.5 px-3.5 rounded-xl ${complete ? "bg-emerald-50 text-emerald-900 border border-emerald-100" : "bg-gray-50 border border-gray-100 text-gray-800"} mb-1.5 ${locked ? "opacity-50" : "cursor-pointer hover:bg-gray-100 transition"}`}
-            onClick={locked ? undefined : () => navigate(PATHS.lesson(lessonId))}
+            onClick={locked ? undefined : () => handleOpenLesson(lessonId)}
           >
             <span className="text-sm font-medium">Lesson {i + 1}{lesson ? `: ${lesson.title}` : ""}</span>
             <span className="text-xs font-semibold">{complete ? "✅ Done" : locked ? "🔒 Locked" : "▶️ Start"}</span>
@@ -112,7 +120,7 @@ export default function TrackDashboardPage({ courseName, statusKey, total, start
           </button>
         </div>
       ) : (
-        <button className="bg-black text-white px-5 py-2.5 rounded-lg font-semibold text-sm mt-6 hover:bg-gray-800 transition" onClick={() => navigate(PATHS.lesson(nextLessonId))}>
+        <button className="bg-black text-white px-5 py-2.5 rounded-lg font-semibold text-sm mt-6 hover:bg-gray-800 transition" onClick={() => handleOpenLesson(nextLessonId)}>
           Continue Lesson {nextIndex + 1} →
         </button>
       )}

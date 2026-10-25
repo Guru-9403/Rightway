@@ -59,7 +59,10 @@ export default function CourseModal({ courseId }) {
             ) : (
               <button
                 className={`flex-1 ${isEnrolled ? "bg-emerald-600 text-white" : "bg-red-600 hover:bg-red-700 text-white"} font-bold text-xs py-2.5 rounded-lg transition shadow-sm active:scale-95`}
-                onClick={() => enrollInCourse(c.id)}
+                onClick={() => {
+                  closeModal();
+                  startCourse(c.id);
+                }}
               >
                 {isEnrolled ? "✓ Enrolled in Track" : "Enroll & Start Learning"}
               </button>

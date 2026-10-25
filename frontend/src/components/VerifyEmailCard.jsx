@@ -8,6 +8,7 @@ export default function VerifyEmailCard({
   initialEmail = "",
   initialEmailSent = true,
   initialMessage = "",
+  returnTo = "",
   onSuccess,
   onBack,
 }) {
@@ -182,11 +183,15 @@ export default function VerifyEmailCard({
 
       // Success
       if (showToast) showToast("Email verified successfully! Welcome to Rightway Skill Builder.");
+      if (applyAuth) await applyAuth(data);
+      const target = returnTo || sessionStorage.getItem("returnTo") || PATHS.home;
+      sessionStorage.setItem("openProfileAfterAuth", "true");
+      sessionStorage.removeItem("returnTo");
+
       if (onSuccess) {
-        onSuccess(data);
+        onSuccess(data, target);
       } else {
-        if (applyAuth) await applyAuth(data);
-        navigate(PATHS.home);
+        navigate(target);
       }
     } catch (err) {
       setError(err.message || "Verification failed. Please try again.");

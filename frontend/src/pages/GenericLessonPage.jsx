@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { useCourseNav } from "../hooks/useCourseNav";
@@ -86,6 +87,19 @@ export default function GenericLessonPage() {
   const prog = getCourseProgress(courseId, app);
   const isCompleted = (prog.completedLevels || []).includes(levelNum);
   const quiz = app.quizState[`generic_${courseId}_${levelNum}`] || { selected: {}, submitted: false, passed: isCompleted };
+
+  useEffect(() => {
+    if (!app.user || app.user.email === "student@rightwayskillbuilder.com") {
+      sessionStorage.setItem("returnTo", window.location.pathname);
+      sessionStorage.setItem("openProfileAfterAuth", "true");
+      if (app.showToast) app.showToast("Please sign up first to watch course videos and start learning!");
+      navigate(`${PATHS.signup}?returnTo=${encodeURIComponent(window.location.pathname)}`);
+    }
+  }, [app.user, app.showToast, navigate]);
+
+  if (!app.user || app.user.email === "student@rightwayskillbuilder.com") {
+    return null;
+  }
 
   return (
     <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-8">

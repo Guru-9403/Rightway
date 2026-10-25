@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import GoogleIcon from "../components/GoogleIcon";
 import VerifyEmailCard from "../components/VerifyEmailCard";
 import { useApp } from "../context/AppContext";
@@ -41,6 +41,17 @@ function getPasswordStrength(pwd) {
 export default function SignupPage() {
   const { googleAuth, showToast } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const returnTo = searchParams.get("returnTo") || sessionStorage.getItem("returnTo") || "";
+
+  useEffect(() => {
+    if (returnTo) {
+      sessionStorage.setItem("returnTo", returnTo);
+      sessionStorage.setItem("openProfileAfterAuth", "true");
+    }
+  }, [returnTo]);
 
   const [form, setForm] = useState({
     name: "",
@@ -210,7 +221,10 @@ export default function SignupPage() {
     setServerError("");
     try {
       await googleAuth();
-      navigate(PATHS.home);
+      const target = returnTo || sessionStorage.getItem("returnTo") || PATHS.home;
+      sessionStorage.setItem("openProfileAfterAuth", "true");
+      sessionStorage.removeItem("returnTo");
+      navigate(target);
     } catch (err) {
       if (err.code !== "auth/popup-closed-by-user") {
         setServerError(err.message || "Google sign-in failed. Please try again.");
@@ -228,7 +242,13 @@ export default function SignupPage() {
           initialEmail={verifyEmail}
           initialEmailSent={verifyEmailSent}
           initialMessage={verifyMessage}
-          onSuccess={() => navigate(PATHS.home)}
+          returnTo={returnTo}
+          onSuccess={() => {
+            const target = returnTo || sessionStorage.getItem("returnTo") || PATHS.home;
+            sessionStorage.setItem("openProfileAfterAuth", "true");
+            sessionStorage.removeItem("returnTo");
+            navigate(target);
+          }}
           onBack={() => setVerifyEmail("")}
         />
       </div>
@@ -244,6 +264,14 @@ export default function SignupPage() {
         </div>
         <h1 className="text-2xl font-extrabold text-center mb-1 text-gray-900">Create your account</h1>
         <p className="text-center text-xs sm:text-sm text-gray-600 mb-6">Start learning with our professional interactive tracks.</p>
+
+        {/* Notice for Course Video / Lesson Visitors */}
+        {returnTo && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm px-3.5 py-2.5 rounded-xl mb-4 flex items-center gap-2 font-medium">
+            <span className="text-base">🎬</span>
+            <span>Please create an account to start your course and watch video lessons.</span>
+          </div>
+        )}
 
         {/* Global Server Error Banner */}
         {serverError && (
@@ -458,7 +486,7 @@ export default function SignupPage() {
           <button
             type="button"
             className="text-red-600 font-semibold hover:underline cursor-pointer"
-            onClick={() => navigate(PATHS.login)}
+            onClick={() => navigate(returnTo ? `${PATHS.login}?returnTo=${encodeURIComponent(returnTo)}` : PATHS.login)}
           >
             Log in
           </button>

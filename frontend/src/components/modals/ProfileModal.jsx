@@ -106,6 +106,99 @@ export default function ProfileModal() {
                 <span>In progress</span>
               )}
             </div>
+
+            {/* Primary Action Button to immediately use course & watch videos */}
+            <button
+              onClick={() => {
+                closeModal();
+                if (window.location.pathname.startsWith("/course") || window.location.pathname.startsWith("/lesson")) {
+                  // Already on learning page, simply close modal to interact with course & video
+                  return;
+                }
+                if (stats.courseName === "Graphic Design") {
+                  navigate(PATHS.graphicDesign);
+                } else if (stats.courseName === "Medical Billing & Coding") {
+                  navigate(PATHS.medical);
+                } else {
+                  navigate(PATHS.track.html);
+                }
+              }}
+              className="w-full mt-3.5 bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white font-extrabold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-md shadow-red-600/20 transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>▶</span>
+              <span>
+                {window.location.pathname.startsWith("/course") || window.location.pathname.startsWith("/lesson")
+                  ? "Continue Watching Lesson & Practice →"
+                  : "Start Learning & Watch Video Lessons →"}
+              </span>
+            </button>
+          </div>
+
+          {/* Quick Track Switcher */}
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                Your Interactive Tracks
+              </span>
+              <span className="text-[11px] font-bold text-red-600">Click to Launch</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                onClick={() => {
+                  closeModal();
+                  navigate(PATHS.track.html);
+                }}
+                className="flex items-center justify-between p-2.5 bg-white border border-gray-200 hover:border-red-300 hover:bg-red-50/40 rounded-xl transition text-left cursor-pointer group"
+              >
+                <div>
+                  <div className="text-xs font-bold text-gray-900 group-hover:text-red-600">Full Stack Web Track</div>
+                  <div className="text-[10px] text-gray-500">HTML • CSS • JavaScript Sandbox</div>
+                </div>
+                <span className="text-xs text-gray-400 group-hover:text-red-600 font-bold">→</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  closeModal();
+                  navigate(PATHS.graphicDesign);
+                }}
+                className="flex items-center justify-between p-2.5 bg-white border border-gray-200 hover:border-red-300 hover:bg-red-50/40 rounded-xl transition text-left cursor-pointer group"
+              >
+                <div>
+                  <div className="text-xs font-bold text-gray-900 group-hover:text-red-600">Graphic Design Track</div>
+                  <div className="text-[10px] text-gray-500">12 Video Walkthrough Levels</div>
+                </div>
+                <span className="text-xs text-gray-400 group-hover:text-red-600 font-bold">→</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  closeModal();
+                  navigate(PATHS.medical);
+                }}
+                className="flex items-center justify-between p-2.5 bg-white border border-gray-200 hover:border-red-300 hover:bg-red-50/40 rounded-xl transition text-left cursor-pointer group"
+              >
+                <div>
+                  <div className="text-xs font-bold text-gray-900 group-hover:text-red-600">Medical Coding Track</div>
+                  <div className="text-[10px] text-gray-500">15 Clinical Video Sessions</div>
+                </div>
+                <span className="text-xs text-gray-400 group-hover:text-red-600 font-bold">→</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  closeModal();
+                  navigate(PATHS.home);
+                }}
+                className="flex items-center justify-between p-2.5 bg-white border border-gray-200 hover:border-red-300 hover:bg-red-50/40 rounded-xl transition text-left cursor-pointer group"
+              >
+                <div>
+                  <div className="text-xs font-bold text-gray-900 group-hover:text-red-600">All 14 Professional Courses</div>
+                  <div className="text-[10px] text-gray-500">Python, UI/UX, AI, 3D & more</div>
+                </div>
+                <span className="text-xs text-gray-400 group-hover:text-red-600 font-bold">→</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick Account Information */}
