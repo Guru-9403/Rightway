@@ -1,0 +1,734 @@
+[
+  {
+    "id": 1,
+    "levelNumber": "01",
+    "title": "Level 01",
+    "topic": "Level 01",
+    "videoUrl": "https://player.cloudinary.com/embed/?cloud_name=rsjsxs77&public_id=Lesson%201",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-base mb-4\"><strong class=\"text-purple-700 text-lg\">Level 01</strong><br><br><u class=\"font-semibold\">Graphic design</u> is the process of creating visual content using <span class=\"text-blue-600 font-semibold\">text</span>, <span class=\"text-purple-600 font-semibold\">image</span>, <span class=\"text-emerald-600 font-semibold\">colours</span>, <span class=\"text-amber-600 font-semibold\">shapes</span> and <span class=\"text-indigo-600 font-semibold\">layout</span> to communicate a message clearly and attractively.<br><br>Good graphic design organizes information hierarchically and emotionally engages the target audience.</p><div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl\"><div class=\"font-bold text-red-600 mb-2 text-base\">Two type of Graphic :-</div><ol class=\"list-decimal list-inside space-y-2 text-gray-800 text-sm font-medium\"><li><strong class=\"text-gray-900\">Raster graphic</strong> — pixel-based images, photographs, and scanned media.</li><li><strong class=\"text-gray-900\">Vector graphic</strong> — path-based mathematical curves and scalable graphics.</li></ol></div>",
+    "notice": "Study the graphic design principles above, watch the video demonstration, and pass the 5-question assessment to complete this level and unlock the next lesson.",
+    "mcqs": [
+      {
+        "q": "What is the primary definition of Graphic Design?",
+        "options": [
+          "Only typing text on a computer",
+          "The process of creating visual content using text, image, colours, shapes, and layout to communicate a message",
+          "Writing code for computer hardware",
+          "Repairing digital printers"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What are the two fundamental types of digital graphics?",
+        "options": [
+          "Audio and Video graphics",
+          "Raster graphic and Vector graphic",
+          "Static and Dynamic tables",
+          "Analog and Micro graphics"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which core elements are combined to create effective graphic design?",
+        "options": [
+          "Text, images, colours, shapes, and layout",
+          "Only black and white lines",
+          "Only raw binary digits",
+          "Only physical paper stock"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is the main goal of graphic design communication?",
+        "options": [
+          "To hide the company's message",
+          "To communicate a message clearly and attractively",
+          "To make file sizes as large as possible",
+          "To replace written language completely"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which type of graphic is scalable infinitely without loss of resolution?",
+        "options": [
+          "Raster graphic",
+          "Vector graphic",
+          "Pixel graphic",
+          "Dot matrix graphic"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "levelNumber": "02",
+    "title": "Level 02",
+    "topic": "Level 02",
+    "videoUrl": "https://player.cloudinary.com/embed/?cloud_name=rsjsxs77&public_id=2",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-3\">Level 02</div><div class=\"mb-4 p-3 bg-white border border-gray-200 rounded-lg\"><div class=\"font-bold text-gray-900 text-base mb-1\">1. Raster graphic</div><p class=\"text-sm text-gray-800 mb-1\">Made up of real images (photos) ➔ <span class=\"bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold text-xs\">Call it's pixel</span></p><p class=\"text-xs text-gray-600 font-medium mt-1\">File formats : <span class=\"text-purple-700 font-bold\">JPG, PNG, GIF, TIFF</span></p></div><div class=\"p-3 bg-white border border-gray-200 rounded-lg\"><div class=\"font-bold text-gray-900 text-base mb-1\">2. Vector graphic</div><p class=\"text-sm text-gray-800 mb-1\">Made up of Vector images (photos/illustrations) ➔ <span class=\"bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-semibold text-xs\">Call it's Path</span></p><p class=\"text-xs text-gray-600 font-medium mt-1\">File formats : <span class=\"text-purple-700 font-bold\">SVG, AI, EPS, PDF</span></p></div></div>",
+    "notice": "Review pixels versus paths, file extensions for both graphic types, and pass the quiz to unlock Level 3.",
+    "mcqs": [
+      {
+        "q": "What is a Raster graphic made up of?",
+        "options": [
+          "Mathematical vectors",
+          "Real images / photos composed of pixels",
+          "Audio waves",
+          "Database rows"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which group contains common file formats for Raster graphics?",
+        "options": [
+          "SVG, AI, EPS, PDF",
+          "JPG, PNG, GIF, TIFF",
+          "EXE, DLL, SYS, BAT",
+          "HTML, CSS, JS, JSON"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is a Vector graphic constructed of?",
+        "options": [
+          "Call it's Path (mathematical points and vectors)",
+          "Fixed pixel grids that blur when resized",
+          "Magnetic tape recordings",
+          "CRT electron beams"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which group contains standard file formats for Vector graphics?",
+        "options": [
+          "JPG, PNG, GIF, BMP",
+          "SVG, AI, EPS, PDF",
+          "MP3, WAV, AAC, FLAC",
+          "ZIP, RAR, 7Z, TAR"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What happens when you zoom in extensively on a raster image compared to a vector path?",
+        "options": [
+          "Raster stays smooth, Vector becomes pixelated",
+          "Raster reveals pixelation/blur, whereas Vector paths stay crisp at any magnification",
+          "Both become invisible",
+          "Vector files crash the computer"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "levelNumber": "03",
+    "title": "Level 03",
+    "topic": "Level 03",
+    "videoUrl": "https://player.cloudinary.com/embed/?cloud_name=rsjsxs77&public_id=3",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-base mb-4\"><strong class=\"text-purple-700 text-lg\">Level 03</strong><br><br>Graphic Design is used to <span class=\"text-blue-600 font-semibold\">communicate information</span>, <span class=\"text-purple-600 font-semibold\">Promote products</span>, and <span class=\"text-emerald-600 font-semibold\">create an visual identity</span>.</p><div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl\"><div class=\"font-bold text-gray-900 mb-3 text-sm uppercase tracking-wide\">Main uses of Graphic design :</div><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-800 font-medium\"><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Branding (Logos & Brand Identity)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Advertising (Commercials & Ads)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Social Media (Posts, Banners & Reels)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Print Media (Brochures & Books)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Packaging (Boxes, Pouches & Labels)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Web & App Design (UI Elements & Icons)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Marketing (Flyers & Email Campaigns)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Presentations (Pitch Decks & Slides)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Entertainment (Posters & Album Covers)</div><div class=\"p-2 bg-white border border-gray-200 rounded flex items-center gap-2\"><span class=\"text-red-500 font-bold\">•</span> Information Design (Infographics & Wayfinding)</div></div></div>",
+    "notice": "Study the primary commercial and informational applications of graphic design, then answer the questions to advance.",
+    "mcqs": [
+      {
+        "q": "What are the three main purposes of Graphic Design?",
+        "options": [
+          "Store data, run calculations, and cool hardware",
+          "Communicate information, promote products, and create a visual identity",
+          "Print receipts, format disks, and write contracts",
+          "Transmit radio frequencies"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which application focuses on creating a unique logo, color palette, and visual identity for a company?",
+        "options": [
+          "Branding",
+          "Hard drive partition",
+          "Database query",
+          "Kernel compile"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Designing physical product boxes, bottles, labels, and cartons is known as:",
+        "options": [
+          "Packaging",
+          "Social Media Story",
+          "Network Routing",
+          "Font Parsing"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Creating visual infographics and complex charts to make data understandable belongs to:",
+        "options": [
+          "Information Design",
+          "Entertainment only",
+          "Sound engineering",
+          "Print Media only"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which sector utilizes graphic design for marketing banners, promo campaigns, and sponsored campaigns?",
+        "options": [
+          "Advertising & Marketing",
+          "Operating system design",
+          "Cryptocurrency mining",
+          "Database backup"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "levelNumber": "04",
+    "title": "Level 04",
+    "topic": "Level 04",
+    "videoUrl": "https://www.youtube.com/embed/hJbJbXbQ2V4",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-3\">Level 04</div><div class=\"space-y-3\"><div class=\"p-3 bg-white rounded-lg border border-gray-200\"><div class=\"font-bold text-gray-900 text-sm\">1. Adobe Photoshop</div><div class=\"text-xs text-blue-700 font-semibold mt-0.5\">Photo editing & raster graphics</div><p class=\"text-xs text-gray-600 mt-1\">Used for image retouching, digital painting, color grading, and photo manipulation.</p></div><div class=\"p-3 bg-white rounded-lg border border-gray-200\"><div class=\"font-bold text-gray-900 text-sm\">2. Adobe Illustrator</div><div class=\"text-xs text-amber-700 font-semibold mt-0.5\">Logos, illustrations & vector graphics</div><p class=\"text-xs text-gray-600 mt-1\">The premier vector design tool for scalable logos, iconography, typography, and artwork.</p></div><div class=\"p-3 bg-white rounded-lg border border-gray-200\"><div class=\"font-bold text-gray-900 text-sm\">3. CorelDRAW</div><div class=\"text-xs text-emerald-700 font-semibold mt-0.5\">Vector design, printing & branding</div><p class=\"text-xs text-gray-600 mt-1\">A vector illustration program heavily used in sign-making, vinyl cutting, and print production.</p></div></div></div><div class=\"p-3 bg-purple-50 border border-purple-200 rounded-xl text-xs font-semibold text-purple-900\">💡 Goal: Install and set up Adobe Illustrator software for vector design lessons.</div>",
+    "notice": "Study the software tools and their specific domains. Complete the quiz to unlock the Illustrator interface overview.",
+    "mcqs": [
+      {
+        "q": "Which software is specifically designed for photo editing and raster graphics?",
+        "options": [
+          "Adobe Photoshop",
+          "Adobe Illustrator",
+          "AutoCAD",
+          "Blender"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which application is the industry standard for creating logos, vector illustrations, and scalable graphics?",
+        "options": [
+          "Adobe Illustrator",
+          "Microsoft Word",
+          "Adobe Photoshop",
+          "Audacity"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is CorelDRAW primarily utilized for in graphic design?",
+        "options": [
+          "Vector design, printing & branding",
+          "Audio mixing",
+          "3D video game engine",
+          "Writing spreadsheets"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Why is Adobe Illustrator preferred over Adobe Photoshop for designing company logos?",
+        "options": [
+          "Logos need to be vector graphics so they can scale to any size without losing sharpness or quality",
+          "Photoshop cannot save images",
+          "Illustrator only uses black color",
+          "Photoshop is only for sound recording"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which program is recommended to install for vector exercises in this course?",
+        "options": [
+          "Adobe Illustrator",
+          "Notepad",
+          "VLC Media Player",
+          "Calculator"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "levelNumber": "05",
+    "title": "Level 05",
+    "topic": "Level 05",
+    "videoUrl": "https://www.youtube.com/embed/IBouHFt8PFo",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-3\">Level 05</div><p class=\"text-xs text-gray-600 mb-3\">The default workspace layout is structured into distinct functional zones:</p><div class=\"space-y-2 text-sm text-gray-800\"><div class=\"flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200\"><span class=\"font-semibold text-blue-600\">Left side</span><span class=\"text-gray-400 font-bold\">➔</span><span class=\"font-bold text-gray-900\">Tools (Toolbar)</span></div><div class=\"flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200\"><span class=\"font-semibold text-blue-600\">Right side</span><span class=\"text-gray-400 font-bold\">➔</span><span class=\"font-bold text-gray-900\">Panels (Properties, Layers, Swatches)</span></div><div class=\"flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200\"><span class=\"font-semibold text-blue-600\">Top</span><span class=\"text-gray-400 font-bold\">➔</span><span class=\"font-bold text-gray-900\">Menu bar (File, Edit, Object, Type, etc.)</span></div><div class=\"flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200\"><span class=\"font-semibold text-blue-600\">Top down</span><span class=\"text-gray-400 font-bold\">➔</span><span class=\"font-bold text-gray-900\">Status bar / Property tool (Control Panel)</span></div></div></div>",
+    "notice": "Memorize the positions of the Tools, Panels, Menu bar, and Status/Property bar in Illustrator.",
+    "mcqs": [
+      {
+        "q": "Where is the primary Tools panel (Toolbar) situated in Adobe Illustrator?",
+        "options": [
+          "Left side",
+          "Bottom edge",
+          "Inside the File menu",
+          "Right side"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Where are dockable Panels (Layers, Swatches, Stroke, Appearance) located?",
+        "options": [
+          "Right side",
+          "Top menu",
+          "Left side",
+          "System tray"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What bar runs across the very Top of Adobe Illustrator?",
+        "options": [
+          "Menu bar",
+          "Status bar",
+          "Tool bar",
+          "Zoom bar"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is located directly below the Menu bar ('Top down')?",
+        "options": [
+          "Status bar / Property tool (Control Panel)",
+          "Recycle bin",
+          "Start menu",
+          "Hard drive monitor"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is the large central gray area where artwork is placed called?",
+        "options": [
+          "Canvas / Document Artboard area",
+          "Trash can",
+          "Taskbar",
+          "File Explorer"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "levelNumber": "06",
+    "title": "Level 06",
+    "topic": "Level 06",
+    "videoUrl": "https://www.youtube.com/embed/gI8gP_lF5a0",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-2\">Level 06</div><p class=\"text-xs text-gray-600 mb-3\">Document and Artboard creation workflow in Adobe Illustrator:</p><div class=\"flex flex-col gap-2 text-xs sm:text-sm font-semibold text-gray-800\"><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg flex items-center justify-between\"><span>Step 1: Click File ➔ New</span><kbd class=\"px-2 py-0.5 bg-gray-100 border border-gray-300 rounded font-mono text-xs\">Ctrl + N</kbd></div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 2: Open document setup dialog</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 3: Fill detail & Set size (Width, Height, Units)</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 4: Set color mode (RGB for Digital / CMYK for Printing)</div><div class=\"p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg font-bold\">Step 5: Click Ok / Create to generate the Artboard</div></div></div>",
+    "notice": "Learn the keyboard shortcuts Shift + O and Ctrl + N, and understand the steps to create and configure a new artboard.",
+    "mcqs": [
+      {
+        "q": "What is the shortcut to select or create/edit an Artboard in Illustrator?",
+        "options": [
+          "Shift + O",
+          "Ctrl + Z",
+          "Alt + F4",
+          "Ctrl + Shift + S"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is the keyboard shortcut to create a New Document (Click File ➔ New)?",
+        "options": [
+          "Ctrl + N",
+          "Ctrl + O",
+          "Ctrl + P",
+          "Ctrl + W"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which step follows opening the new document window?",
+        "options": [
+          "Fill detail & Set size",
+          "Shut down computer",
+          "Delete the project",
+          "Export video"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What essential setting must be configured before clicking Ok / Create?",
+        "options": [
+          "Set color mode",
+          "Change desktop wallpaper",
+          "Connect external microphone",
+          "Log out of Windows"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which color mode should be selected when designing graphics for screens, web, and social media?",
+        "options": [
+          "RGB color mode",
+          "CMYK color mode",
+          "Grayscale only",
+          "Binary color mode"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "levelNumber": "07",
+    "title": "Level 07",
+    "topic": "Level 07",
+    "videoUrl": "https://www.youtube.com/embed/V6W3u8qB1z8",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-3\">Level 07</div><div class=\"mb-4\"><div class=\"text-xs font-bold text-blue-700 uppercase tracking-wide mb-2\">Shape name & Short key:</div><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-gray-800 font-medium\"><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg flex justify-between items-center\"><span>• Rectangle tool</span><kbd class=\"font-mono font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200\">(M)</kbd></div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg flex justify-between items-center\"><span>• Ellipse tool</span><kbd class=\"font-mono font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200\">(L)</kbd></div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg flex justify-between items-center\"><span>• Polygon tool</span><span class=\"text-xs text-gray-500 font-normal\">Multi-sided</span></div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg flex justify-between items-center\"><span>• Star tool</span><span class=\"text-xs text-gray-500 font-normal\">Points & flares</span></div></div></div><div class=\"pt-3 border-t border-gray-200\"><div class=\"text-xs font-bold text-blue-700 uppercase tracking-wide mb-2\">Color :</div><div class=\"space-y-2 text-xs sm:text-sm text-gray-800 font-medium\"><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg flex justify-between items-center\"><span>• Fill color (inside interior of shape)</span><kbd class=\"font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200\">(X)</kbd></div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg flex justify-between items-center\"><span>• Stoke color (outline / border) & Swap Fill/Stroke</span><kbd class=\"font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200\">(shift + X)</kbd></div></div></div></div>",
+    "notice": "Study the shortcuts (M, L, X, Shift+X) and the distinction between Fill and Stroke colors.",
+    "mcqs": [
+      {
+        "q": "What is the shortcut key for the Rectangle tool in Illustrator?",
+        "options": [
+          "M",
+          "R",
+          "V",
+          "T"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is the shortcut key for the Ellipse tool?",
+        "options": [
+          "L",
+          "E",
+          "C",
+          "O"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What key switches focus to the Fill color box?",
+        "options": [
+          "X",
+          "F",
+          "C",
+          "Tab"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What keyboard shortcut swaps Fill color and Stroke color?",
+        "options": [
+          "Shift + X",
+          "Ctrl + X",
+          "Alt + X",
+          "Space + X"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which shape tools do not have default single-letter hotkeys?",
+        "options": [
+          "Polygon tool and Star tool",
+          "Rectangle and Ellipse",
+          "Pen tool",
+          "Direct Selection tool"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "levelNumber": "08",
+    "title": "Level 08",
+    "topic": "Level 08",
+    "videoUrl": "https://www.youtube.com/embed/rP3iM7n3_v0",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-2\">Level 08</div><p class=\"text-sm text-blue-700 font-semibold mb-3\">Eyedropper tool is Pick and apply in the color.</p><p class=\"text-xs text-gray-600 mb-3\">Official sampling and application sequence:</p><div class=\"space-y-2 text-xs sm:text-sm font-medium text-gray-800\"><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">1. Create object on the artboard</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">2. Choose color source (another vector shape, photo, or swatch)</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">3. Select Eyedropper tool <kbd class=\"font-mono font-bold text-red-600\">(I)</kbd></div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">4. Pick the Choose color by clicking the sample</div><div class=\"p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg font-bold\">5. Apply in object directly</div></div></div>",
+    "notice": "Understand how the Eyedropper tool (I) samples color and attributes to apply them to target objects.",
+    "mcqs": [
+      {
+        "q": "What is the primary function of the Eyedropper tool?",
+        "options": [
+          "Pick and apply in the color",
+          "Crop the document",
+          "Export audio files",
+          "Spell check text"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is the shortcut key for the Eyedropper tool in Illustrator?",
+        "options": [
+          "I",
+          "E",
+          "D",
+          "K"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is the first step in the Eyedropper workflow?",
+        "options": [
+          "Create object",
+          "Close Illustrator",
+          "Restart computer",
+          "Print document"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "After selecting the Eyedropper tool, how do you sample the color?",
+        "options": [
+          "Click on the desired color to pick it",
+          "Double click the title bar",
+          "Press Esc twice",
+          "Drag the file to desktop"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Can the Eyedropper tool copy stroke weight and transparency alongside color?",
+        "options": [
+          "Yes, it samples appearance attributes including fill, stroke, and transparency",
+          "No, it only samples black",
+          "No, it damages vector files",
+          "Only in Photoshop"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "levelNumber": "09",
+    "title": "Level 09",
+    "topic": "Level 09",
+    "videoUrl": "https://www.youtube.com/embed/M0pU0gD2F_s",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-2\">Level 09</div><p class=\"text-sm text-blue-700 font-semibold mb-3\">Shape builder tool in add (or) divide in shapes.</p><p class=\"text-xs text-gray-600 mb-3\">Practical shape construction sequence:</p><div class=\"space-y-2 text-xs sm:text-sm font-medium text-gray-800\"><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 1: Create shapes that overlap</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 2: Select shapes together</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 3: Select shape builder tool <kbd class=\"font-mono font-bold text-red-600\">(shift + M)</kbd></div><div class=\"p-2.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-lg\">Step 4: Click and drag across regions ➔ <strong>Add to Shapes</strong></div><div class=\"p-2.5 bg-rose-50 border border-rose-200 text-rose-900 rounded-lg\">Step 5: <strong>(Press alt)</strong> divide / subtract Shapes</div><div class=\"p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg font-bold\">Step 6: Apply in tool to finalize combined geometry</div></div></div>",
+    "notice": "Master Shift + M, shape combining, and holding Alt to delete/divide overlapping vector segments.",
+    "mcqs": [
+      {
+        "q": "What is the shortcut key for the Shape Builder tool in Illustrator?",
+        "options": [
+          "Shift + M",
+          "Ctrl + M",
+          "Alt + M",
+          "Ctrl + Shift + S"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What does the Shape Builder tool do?",
+        "options": [
+          "Add (merge) or divide (subtract) shapes",
+          "Draw pixel brushes only",
+          "Resize the artboard only",
+          "Record voice memos"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What must you do before using the Shape Builder tool?",
+        "options": [
+          "Select the overlapping shapes",
+          "Save the file as PDF",
+          "Invert all screen colors",
+          "Unplug the mouse"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What key do you press and hold to divide or subtract a shape region?",
+        "options": [
+          "Press Alt",
+          "Press Space",
+          "Press Tab",
+          "Press Caps Lock"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "How do you combine multiple overlapping shape sections into one solid shape?",
+        "options": [
+          "Click and drag across the sections with the Shape Builder tool",
+          "Press Ctrl + Alt + Delete",
+          "Right click and choose Paste",
+          "Zoom out to 10%"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "levelNumber": "10",
+    "title": "Level 10",
+    "topic": "Level 10",
+    "videoUrl": "https://www.youtube.com/embed/tS4bWwX4G7Y",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-2\">Level 10</div><p class=\"text-sm text-blue-700 font-semibold mb-3\">Object arranged to front and backward.</p><div class=\"space-y-2 text-xs sm:text-sm font-medium text-gray-800\"><div class=\"p-3 bg-white border border-gray-200 rounded-lg flex items-center justify-between\"><span>Bring to Front (top of all objects)</span><kbd class=\"font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200\">Shift + ctrl + ]</kbd></div><div class=\"p-3 bg-white border border-gray-200 rounded-lg flex items-center justify-between\"><span>Bring Forward (one level up)</span><kbd class=\"font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200\">ctrl + ]</kbd></div><div class=\"p-3 bg-white border border-gray-200 rounded-lg flex items-center justify-between\"><span>Send backward (one level down)</span><kbd class=\"font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200\">ctrl + [</kbd></div><div class=\"p-3 bg-white border border-gray-200 rounded-lg flex items-center justify-between\"><span>Bring to Back / Send to Back (bottom of all objects)</span><kbd class=\"font-mono font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200\">Shift + ctrl + [</kbd></div></div></div>",
+    "notice": "Study the stacking order shortcuts (Shift+Ctrl+], Ctrl+], Ctrl+[, Shift+Ctrl+[).",
+    "mcqs": [
+      {
+        "q": "Which shortcut brings a selected object completely to the Front (very top)?",
+        "options": [
+          "Shift + ctrl + ]",
+          "ctrl + ]",
+          "ctrl + [",
+          "Shift + ctrl + ["
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which shortcut moves an object one step Forward in stacking order?",
+        "options": [
+          "ctrl + ]",
+          "Shift + ctrl + ]",
+          "ctrl + [",
+          "Alt + ]"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which shortcut moves an object one step Backward in stacking order?",
+        "options": [
+          "ctrl + [",
+          "ctrl + ]",
+          "Shift + ctrl + [",
+          "Alt + ["
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which shortcut sends an object all the way to the Back (bottom)?",
+        "options": [
+          "Shift + ctrl + [",
+          "ctrl + [",
+          "Shift + ctrl + ]",
+          "Alt + Shift + ["
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Under which main menu can you also find the Arrange options?",
+        "options": [
+          "Object ➔ Arrange",
+          "Filter ➔ Render",
+          "Window ➔ Arrange",
+          "Help ➔ Arrange"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "levelNumber": "11",
+    "title": "Level 11",
+    "topic": "Level 11",
+    "videoUrl": "https://www.youtube.com/embed/K9yL-d7PzXk",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-2\">Level 11</div><p class=\"text-xs text-gray-600 mb-3\">Mastering bezier curves and anchor points:</p><div class=\"space-y-3 text-xs sm:text-sm text-gray-800\"><div class=\"p-3 bg-white border border-gray-200 rounded-lg\"><div class=\"font-bold text-blue-700 mb-1\">Straight lines :</div><p class=\"text-gray-700 font-medium\">Click and release to place anchor points.</p></div><div class=\"p-3 bg-white border border-gray-200 rounded-lg\"><div class=\"font-bold text-blue-700 mb-1\">Curves lines :</div><p class=\"text-gray-700 font-medium\">Click and drag to create direction handles bend your path.</p></div><div class=\"p-3 bg-white border border-gray-200 rounded-lg\"><div class=\"font-bold text-blue-700 mb-1\">Close / End path :</div><p class=\"text-gray-700 font-medium\">Press <kbd class=\"font-mono font-bold bg-gray-100 px-1.5 py-0.5 rounded border border-gray-300\">escape(ESC)</kbd> on keyboard (or) Connect to start point.</p></div></div></div>",
+    "notice": "Study how the Pen tool (P) places anchor points for straight segments and direction handles for curves.",
+    "mcqs": [
+      {
+        "q": "What is the keyboard shortcut for the Pen tool?",
+        "options": [
+          "P",
+          "B",
+          "N",
+          "A"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "How do you create straight lines with the Pen tool?",
+        "options": [
+          "Click and release to place anchor points",
+          "Click and drag direction handles",
+          "Double click the screen",
+          "Hold the spacebar"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "How do you generate curved lines using the Pen tool?",
+        "options": [
+          "Click and drag to create direction handles that bend your path",
+          "Click and release immediately",
+          "Press Ctrl + Z",
+          "Draw with eraser"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "How do you Close or End an active Pen tool path?",
+        "options": [
+          "Press escape(ESC) on keyboard (or) Connect to start point",
+          "Delete the layer",
+          "Press Alt + F4",
+          "Restart the app"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What do the direction handles extending from an anchor point control?",
+        "options": [
+          "The angle and curvature (slope) of the path",
+          "The file saving speed",
+          "The system volume",
+          "The monitor brightness"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "levelNumber": "12",
+    "title": "Level 12",
+    "topic": "Level 12",
+    "videoUrl": "https://www.youtube.com/embed/Xq4yLzJ8E1Q",
+    "theoryHtml": "<div class=\"p-4 bg-gray-50 border border-gray-200 rounded-xl mb-4\"><div class=\"font-bold text-purple-700 text-lg mb-2\">Level 12</div><p class=\"text-sm text-blue-700 font-semibold mb-3\">Object and image rotate to 360*</p><p class=\"text-xs text-gray-600 mb-3\">Circular pattern and transformation workflow:</p><div class=\"space-y-2 text-xs sm:text-sm font-medium text-gray-800\"><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 1: Create an object on the artboard</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 2: Select rotate tool <kbd class=\"font-mono font-bold text-red-600\">(R)</kbd></div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 3: Set 45* point (or desired center reference point)</div><div class=\"p-2.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-lg\">Step 4: <kbd class=\"font-mono font-bold bg-white px-2 py-0.5 rounded border border-indigo-300\">alt + click mouse</kbd> = Open rotate panel</div><div class=\"p-2.5 bg-white border border-gray-200 rounded-lg\">Step 5: Set angle, click <strong>Copy</strong> (creates rotated duplicate)</div><div class=\"p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg font-bold\">Step 6: Click <kbd class=\"font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-300\">ctrl + D</kbd> repeatedly to complete the 360* pattern!</div></div></div>",
+    "notice": "Learn the shortcut R, setting anchor point with Alt+click, and repeating transforms with Ctrl+D.",
+    "mcqs": [
+      {
+        "q": "What is the shortcut key for the Rotate tool?",
+        "options": [
+          "R",
+          "O",
+          "T",
+          "W"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "How far can objects and images rotate around a center point?",
+        "options": [
+          "Rotate to 360*",
+          "Only 90*",
+          "Only 180*",
+          "Only 45*"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What action sets the pivot point and opens the Rotate dialog panel?",
+        "options": [
+          "alt + click mouse",
+          "Right click twice",
+          "Press Backspace",
+          "Scroll mouse wheel"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What button in the Rotate panel creates a rotated duplicate of the shape?",
+        "options": [
+          "Copy",
+          "Cancel",
+          "Delete",
+          "Reset"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What keyboard shortcut duplicates and repeats the last transformation (e.g. 45* copy) around the circle?",
+        "options": [
+          "ctrl + D",
+          "ctrl + Z",
+          "ctrl + S",
+          "ctrl + P"
+        ],
+        "answer": 0
+      }
+    ]
+  }
+]

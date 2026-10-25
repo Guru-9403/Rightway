@@ -1,0 +1,917 @@
+[
+  {
+    "id": 1,
+    "levelNumber": "01",
+    "title": "Level 01",
+    "topic": "Level 01",
+    "videoUrl": "https://www.youtube.com/embed/uBGl2BujkPQ",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Anatomy</u> is a structure of human body,it’s included body shape Size & Parts. For <span class=\"text-purple-700 font-semibold\">example : heart , lungs, bones & Muscles</span>.<br><br><u class=\"font-semibold\">Physiology</u> is a function of Human body. For <span class=\"text-blue-500 font-semibold\">example</span> : Heart (Cardiovascular system<span class=\"text-blue-500 font-semibold\">(Pumps blood)</span>), Kidney(Urinary system<span class=\"text-blue-500 font-semibold\">(Remove the wastage)</span>),Brain (Nervous system<span class=\"text-blue-500 font-semibold\">(control the body)</span>), Lungs(respiratory system<span class=\"text-blue-500 font-semibold\">(exchanges the gases)</span>), Stomach (Digestive system <span class=\"text-blue-500 font-semibold\">(Breakdown of food for absorption)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "What is the primary scientific focus of Anatomy?",
+        "options": [
+          "Chemical reactions in cells",
+          "The physical structure, shape, and parts of the body",
+          "Electrical brain waves only",
+          "Nutrient digestion speed"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which of the following is considered an anatomical structure?",
+        "options": [
+          "Pumping blood",
+          "Exchanging oxygen",
+          "Heart, lungs, bones, and muscles",
+          "Filtering waste"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "What is the primary function of Physiology?",
+        "options": [
+          "Naming bones alphabetically",
+          "Studying the operational function of the human body and its organs",
+          "Determining skin color",
+          "Designing hospital equipment"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which organ system is primarily responsible for pumping blood throughout the body?",
+        "options": [
+          "Respiratory system",
+          "Cardiovascular system",
+          "Urinary system",
+          "Integumentary system"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is the primary physiological function of the kidneys?",
+        "options": [
+          "Control the skeletal muscles",
+          "Exchanges gases during breathing",
+          "Remove wastage from the body through the urinary system",
+          "Digest solid foods"
+        ],
+        "answer": 2
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "levelNumber": "02",
+    "title": "Level 02",
+    "topic": "Level 02",
+    "videoUrl": "https://www.youtube.com/embed/rDGqkMHPDqE",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Skeletal System</u> provides the internal framework of the human body, consisting of 206 bones in adults. For <span class=\"text-purple-700 font-semibold\">example : femur , skull, ribs & vertebrae</span>.<br><br><u class=\"font-semibold\">Bone Functions</u> include structural support, organ protection, and mineral storage. For <span class=\"text-blue-500 font-semibold\">example</span> : Cranium (<span class=\"text-blue-500 font-medium\">Protects the delicate brain</span>), Rib cage (<span class=\"text-blue-500 font-medium\">Shields heart and lungs</span>), Red Bone Marrow (<span class=\"text-blue-500 font-medium\">Hematopoiesis(Produces red blood cells)</span>), Long bones (<span class=\"text-blue-500 font-medium\">Calcium reservoir(Stores calcium and phosphorus)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "How many bones make up the adult human skeleton?",
+        "options": [
+          "150 bones",
+          "206 bones",
+          "300 bones",
+          "180 bones"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which part of the skeletal system protects the brain?",
+        "options": [
+          "Cranium (Skull)",
+          "Sternum",
+          "Pelvis",
+          "Clavicle"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What is the medical term for the production of blood cells in bone marrow?",
+        "options": [
+          "Hemodialysis",
+          "Hematopoiesis",
+          "Homeostasis",
+          "Hemostasis"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What vital organs are protected by the rib cage?",
+        "options": [
+          "Kidneys and bladder",
+          "Heart and lungs",
+          "Brain and spinal cord",
+          "Stomach and intestines"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which mineral is predominantly stored inside bone tissue?",
+        "options": [
+          "Iron and zinc",
+          "Sodium and iodine",
+          "Calcium and phosphorus",
+          "Potassium and chloride"
+        ],
+        "answer": 2
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "levelNumber": "03",
+    "title": "Level 03",
+    "topic": "Level 03",
+    "videoUrl": "https://www.youtube.com/embed/jqy0i1Mwu38",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Muscular System</u> contains over 600 muscles that create movement, maintain posture, and produce body heat. For <span class=\"text-purple-700 font-semibold\">example : biceps , triceps, diaphragm & deltoid</span>.<br><br><u class=\"font-semibold\">Three Muscle Types</u> operate in human physiology. For <span class=\"text-blue-500 font-semibold\">example</span> : Skeletal Muscle (<span class=\"text-blue-500 font-medium\">Voluntary movement(Attaches to bones for locomotion)</span>), Smooth Muscle (<span class=\"text-blue-500 font-medium\">Involuntary control(Lines blood vessels and hollow GI organs)</span>), Cardiac Muscle (<span class=\"text-blue-500 font-medium\">Involuntary rhythmic beats(Pumps the myocardium of heart)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "Which muscle type is under voluntary conscious control?",
+        "options": [
+          "Cardiac muscle",
+          "Skeletal muscle",
+          "Smooth muscle",
+          "Vascular muscle"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Where is smooth muscle primarily found in the human body?",
+        "options": [
+          "Attached to the femur",
+          "In the walls of hollow internal organs and blood vessels",
+          "In the tongue only",
+          "In the heart walls only"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is a major physiological function of muscular contraction besides motion?",
+        "options": [
+          "Generating body heat (thermogenesis)",
+          "Filtering blood waste",
+          "Storing bile",
+          "Exchanging lung gases"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which muscle is found exclusively in the human heart?",
+        "options": [
+          "Skeletal muscle",
+          "Smooth muscle",
+          "Cardiac muscle",
+          "Striated visceral muscle"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "What connective tissue anchors skeletal muscles to bones?",
+        "options": [
+          "Ligament",
+          "Tendon",
+          "Cartilage",
+          "Fascia"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "levelNumber": "04",
+    "title": "Level 04",
+    "topic": "Level 04",
+    "videoUrl": "https://www.youtube.com/embed/CjNKbL_qYEU",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Cardiovascular System</u> delivers oxygen, nutrients, and hormones to cells while carrying away carbon dioxide and metabolic waste. For <span class=\"text-purple-700 font-semibold\">example : arteries , veins, capillaries & heart chambers</span>.<br><br><u class=\"font-semibold\">Circulation Dynamics</u> depend on pressurized blood flow. For <span class=\"text-blue-500 font-semibold\">example</span> : Left Ventricle (<span class=\"text-blue-500 font-medium\">Systemic pump(Drives oxygenated blood through aorta)</span>), Pulmonary Artery (<span class=\"text-blue-500 font-medium\">Deoxygenated transport(Carries blood to lungs)</span>), Capillaries (<span class=\"text-blue-500 font-medium\">Microcirculation(Gas and nutrient diffusion across thin walls)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "Which chamber of the heart pumps oxygen-rich blood into the aorta for systemic circulation?",
+        "options": [
+          "Right atrium",
+          "Right ventricle",
+          "Left ventricle",
+          "Left atrium"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "What is the primary role of capillaries in human circulation?",
+        "options": [
+          "High pressure blood pumping",
+          "Gas, nutrient, and waste exchange between blood and tissues",
+          "Preventing blood clotting",
+          "Producing white blood cells"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which blood vessels typically carry deoxygenated blood toward the heart?",
+        "options": [
+          "Arteries",
+          "Veins",
+          "Arterioles",
+          "Capillary beds"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is the unique characteristic of the pulmonary veins?",
+        "options": [
+          "They carry deoxygenated blood from the brain",
+          "They carry oxygenated blood from the lungs into the left atrium",
+          "They have thick muscular valves only",
+          "They connect directly to the liver"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "How many chambers are there in the human heart?",
+        "options": [
+          "2 chambers",
+          "3 chambers",
+          "4 chambers",
+          "6 chambers"
+        ],
+        "answer": 2
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "levelNumber": "05",
+    "title": "Level 05",
+    "topic": "Level 05",
+    "videoUrl": "https://www.youtube.com/embed/mOKmjYwfDGU",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Respiratory System</u> facilitates external respiration by taking in oxygen and expelling carbon dioxide. For <span class=\"text-purple-700 font-semibold\">example : trachea , bronchi, bronchioles & alveoli</span>.<br><br><u class=\"font-semibold\">Pulmonary Mechanics</u> coordinate pressure gradients in the thorax. For <span class=\"text-blue-500 font-semibold\">example</span> : Diaphragm (<span class=\"text-blue-500 font-medium\">Primary muscle(Flattens downward during inspiration)</span>), Alveoli (<span class=\"text-blue-500 font-medium\">Gas exchange site(Microscopic air sacs wrapped with capillaries)</span>), Epiglottis (<span class=\"text-blue-500 font-medium\">Airway valve(Prevents food aspiration into larynx)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "Where does oxygen and carbon dioxide gas exchange take place in the lungs?",
+        "options": [
+          "Trachea",
+          "Larynx",
+          "Alveoli",
+          "Bronchioles"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "What is the principal muscle that contracts and flattens during inhalation?",
+        "options": [
+          "Intercostal muscle only",
+          "Diaphragm",
+          "Pectoralis major",
+          "Trapezius"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which anatomical structure prevents swallowed food from entering the trachea?",
+        "options": [
+          "Uvula",
+          "Epiglottis",
+          "Pharynx",
+          "Vocal cords"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What happens to the thoracic volume when the diaphragm contracts?",
+        "options": [
+          "Decreases, forcing air out",
+          "Increases, lowering pressure to pull air in",
+          "Remains unchanged",
+          "Stops blood circulation"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What gas is primarily eliminated from the bloodstream by the respiratory system?",
+        "options": [
+          "Carbon monoxide",
+          "Nitrogen",
+          "Carbon dioxide (CO2)",
+          "Hydrogen"
+        ],
+        "answer": 2
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "levelNumber": "06",
+    "title": "Level 06",
+    "topic": "Level 06",
+    "videoUrl": "https://www.youtube.com/embed/Og5xAdC8EUI",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Digestive System</u> breaks down complex ingested food into microscopic nutrients absorbable into circulation. For <span class=\"text-purple-700 font-semibold\">example : esophagus , stomach, small intestine & colon</span>.<br><br><u class=\"font-semibold\">Metabolic Organs</u> produce essential enzymes and digestive fluids. For <span class=\"text-blue-500 font-semibold\">example</span> : Stomach (<span class=\"text-blue-500 font-medium\">Acid churn(Hydrochloric acid and pepsin breakdown proteins)</span>), Small Intestine (<span class=\"text-blue-500 font-medium\">Nutrient absorption(Villi absorb glucose, amino acids and lipids)</span>), Liver (<span class=\"text-blue-500 font-medium\">Bile synthesis(Secretes bile for fat emulsification and detoxifies drugs)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "In which organ does the greatest amount of nutrient absorption take place?",
+        "options": [
+          "Stomach",
+          "Esophagus",
+          "Small intestine",
+          "Large intestine"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "What substance is synthesized by the liver to assist in fat digestion?",
+        "options": [
+          "Insulin",
+          "Bile",
+          "Pepsin",
+          "Glucagon"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What acid is produced by parietal cells in the stomach to aid digestion?",
+        "options": [
+          "Sulfuric acid",
+          "Hydrochloric acid (HCl)",
+          "Lactic acid",
+          "Acetic acid"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is the primary role of the large intestine (colon)?",
+        "options": [
+          "Protein synthesis",
+          "Water and electrolyte reabsorption and fecal formation",
+          "Bile storage",
+          "Secreting digestive enzymes"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which organ stores and concentrates bile until stimulated by food?",
+        "options": [
+          "Spleen",
+          "Gallbladder",
+          "Pancreas",
+          "Kidney"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "levelNumber": "07",
+    "title": "Level 07",
+    "topic": "Level 07",
+    "videoUrl": "https://www.youtube.com/embed/qPix_X-9t7E",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Nervous System</u> acts as the master control and communication network, regulating both conscious thoughts and autonomic reflexes. For <span class=\"text-purple-700 font-semibold\">example : cerebrum , cerebellum, brainstem & spinal nerves</span>.<br><br><u class=\"font-semibold\">System Divisions</u> separate executive commands from peripheral senses. For <span class=\"text-blue-500 font-semibold\">example</span> : Central Nervous System (<span class=\"text-blue-500 font-medium\">CNS core(Brain and spinal cord integrate sensory input)</span>), Peripheral Nervous System (<span class=\"text-blue-500 font-medium\">PNS relays(Cranial and spinal nerves carry nerve impulses)</span>), Brainstem (<span class=\"text-blue-500 font-medium\">Vital autonomic center(Regulates respiration, heart rate and blood pressure)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "What anatomical structures constitute the Central Nervous System (CNS)?",
+        "options": [
+          "Spinal nerves and autonomic ganglia",
+          "Brain and spinal cord",
+          "Sensory receptors and skin",
+          "Cranial nerves only"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which part of the brain controls voluntary movement, reasoning, and higher thinking?",
+        "options": [
+          "Cerebrum",
+          "Cerebellum",
+          "Brainstem",
+          "Pons"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which brain region is primarily responsible for balance, coordination, and posture?",
+        "options": [
+          "Medulla oblongata",
+          "Cerebellum",
+          "Hypothalamus",
+          "Corpus callosum"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What vital involuntary functions are controlled by the brainstem?",
+        "options": [
+          "Language learning and speech",
+          "Heart rate, breathing rate, and blood pressure",
+          "Color perception",
+          "Voluntary walking"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What are the specialized functional nerve cells that transmit electrical signals called?",
+        "options": [
+          "Nephrons",
+          "Neurons",
+          "Neutrophils",
+          "Myocytes"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "levelNumber": "08",
+    "title": "Level 08",
+    "topic": "Level 08",
+    "videoUrl": "https://www.youtube.com/embed/l128tW1H5a8",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Urinary System</u> maintains fluid balance, regulates blood electrolyte concentrations, and removes nitrogenous waste products. For <span class=\"text-purple-700 font-semibold\">example : kidneys , ureters, urinary bladder & urethra</span>.<br><br><u class=\"font-semibold\">Renal Physiology</u> operates at the microscopic nephron level. For <span class=\"text-blue-500 font-semibold\">example</span> : Nephron (<span class=\"text-blue-500 font-medium\">Functional filtration unit(Glomerulus filters blood plasma into filtrate)</span>), Ureters (<span class=\"text-blue-500 font-medium\">Conduit tubes(Propel urine from kidney to bladder via peristalsis)</span>), Urinary Bladder (<span class=\"text-blue-500 font-medium\">Storage reservoir(Expandable muscular sac with transitional epithelium)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "What is the microscopic functional filtration unit of the human kidney?",
+        "options": [
+          "Neuron",
+          "Alveolus",
+          "Nephron",
+          "Osteon"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "What tubes transport formed urine from the kidneys to the urinary bladder?",
+        "options": [
+          "Urethra",
+          "Ureters",
+          "Fallopian tubes",
+          "Vasa deferentia"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is the main nitrogenous waste filtered from the blood by kidneys?",
+        "options": [
+          "Urea",
+          "Carbon dioxide",
+          "Bile salts",
+          "Hemoglobin"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which organ temporarily stores urine until micturition (urination) occurs?",
+        "options": [
+          "Gallbladder",
+          "Urinary bladder",
+          "Liver",
+          "Renal pelvis"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What canal carries urine from the urinary bladder to the outside of the body?",
+        "options": [
+          "Ureter",
+          "Urethra",
+          "Renal artery",
+          "Collecting duct"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "levelNumber": "09",
+    "title": "Level 09",
+    "topic": "Level 09",
+    "videoUrl": "https://www.youtube.com/embed/Orumw-PyNjw",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Integumentary System</u> is the body's largest organ system, forming a protective barrier against pathogens, UV radiation, and dehydration. For <span class=\"text-purple-700 font-semibold\">example : epidermis , dermis, subcutaneous tissue & sebaceous glands</span>.<br><br><u class=\"font-semibold\">Cutaneous Layers</u> contribute specialized physiological duties. For <span class=\"text-blue-500 font-semibold\">example</span> : Epidermis (<span class=\"text-blue-500 font-medium\">Avascular shield(Keratinized stratified squamous cells that shed continuously)</span>), Dermis (<span class=\"text-blue-500 font-medium\">Vascular support(Contains hair follicles, nerve receptors and collagen)</span>), Sudoriferous Glands (<span class=\"text-blue-500 font-medium\">Thermoregulation(Sweat secretion cools body surface)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "What is the outermost avascular layer of human skin called?",
+        "options": [
+          "Dermis",
+          "Epidermis",
+          "Hypodermis",
+          "Subcutaneous fascia"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "In which skin layer are sensory nerve receptors, hair follicles, and blood vessels located?",
+        "options": [
+          "Stratum corneum",
+          "Dermis",
+          "Epidermis",
+          "Cuticle"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What tough, fibrous protein provides strength and water resistance to skin cells?",
+        "options": [
+          "Keratin",
+          "Melanin",
+          "Collagen",
+          "Elastin"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What pigment produced by melanocytes shields the skin from ultraviolet (UV) radiation?",
+        "options": [
+          "Hemoglobin",
+          "Carotene",
+          "Melanin",
+          "Bilirubin"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "What is the main physiological purpose of sudoriferous (sweat) glands?",
+        "options": [
+          "Enzyme secretion",
+          "Body temperature regulation through evaporative cooling",
+          "Hormone synthesis",
+          "Fat digestion"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "levelNumber": "10",
+    "title": "Level 10",
+    "topic": "Level 10",
+    "videoUrl": "https://www.youtube.com/embed/eWHH9je2zG4",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Endocrine System</u> coordinates slow, long-lasting biological processes by releasing hormones directly into the bloodstream. For <span class=\"text-purple-700 font-semibold\">example : pituitary , thyroid, adrenal glands & pancreas</span>.<br><br><u class=\"font-semibold\">Endocrine Signaling</u> regulates metabolism, growth, and blood chemistry. For <span class=\"text-blue-500 font-semibold\">example</span> : Pituitary Gland (<span class=\"text-blue-500 font-medium\">Master gland(Releases tropic hormones that regulate other endocrine organs)</span>), Pancreatic Islets (<span class=\"text-blue-500 font-medium\">Blood glucose control(Secretes insulin and glucagon)</span>), Thyroid Gland (<span class=\"text-blue-500 font-medium\">Metabolic rate(T3 and T4 govern cellular caloric consumption)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "Which endocrine gland is widely recognized as the 'master gland'?",
+        "options": [
+          "Thyroid gland",
+          "Adrenal gland",
+          "Pituitary gland",
+          "Thymus"
+        ],
+        "answer": 2
+      },
+      {
+        "q": "Which hormone is secreted by the pancreas to lower elevated blood glucose levels?",
+        "options": [
+          "Glucagon",
+          "Insulin",
+          "Cortisol",
+          "Thyroxine"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What primary metabolic function is governed by thyroid hormones (T3 and T4)?",
+        "options": [
+          "Basal metabolic rate and energy consumption",
+          "Red blood cell production",
+          "Urine concentration",
+          "Bone marrow calcification"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "Which glands situated above the kidneys produce epinephrine (adrenaline) and cortisol?",
+        "options": [
+          "Parathyroid glands",
+          "Adrenal glands",
+          "Salivary glands",
+          "Pineal gland"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Unlike exocrine glands, where do endocrine glands release their secretions?",
+        "options": [
+          "Through ducts onto skin",
+          "Directly into the bloodstream",
+          "Into the stomach cavity",
+          "Into lymphatic ducts only"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "levelNumber": "11",
+    "title": "Level 11",
+    "topic": "Level 11",
+    "videoUrl": "https://www.youtube.com/embed/I7orwMgTQ5I",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Lymphatic System</u> recovers interstitial tissue fluid, returns it to venous blood, and defends against microbial invaders. For <span class=\"text-purple-700 font-semibold\">example : lymph nodes , spleen, thymus & lymphatic vessels</span>.<br><br><u class=\"font-semibold\">Immune Machinery</u> mounts innate and adaptive defenses against pathology. For <span class=\"text-blue-500 font-semibold\">example</span> : Spleen (<span class=\"text-blue-500 font-medium\">Blood filter(Removes aged red blood cells and harbors lymphocytes)</span>), Lymph Nodes (<span class=\"text-blue-500 font-medium\">Filtration checkpoint(Clusters of B and T cells that trap pathogens)</span>), Thymus (<span class=\"text-blue-500 font-medium\">T-cell maturation(Immunocompetence training center for T-lymphocytes)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "What is the primary immunological function of lymph nodes?",
+        "options": [
+          "Produce digestive bile",
+          "Filter lymph fluid and trap pathogens and foreign particles",
+          "Synthesize bone minerals",
+          "Pump arterial blood"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which lymphatic organ filters blood and destroys worn-out erythrocytes (RBCs)?",
+        "options": [
+          "Thymus",
+          "Spleen",
+          "Thyroid",
+          "Appendix"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Where in the body do T-lymphocytes mature and attain immunocompetence?",
+        "options": [
+          "Bone marrow only",
+          "Thymus gland",
+          "Kidneys",
+          "Liver"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What fluid is circulated throughout the lymphatic system?",
+        "options": [
+          "Synovial fluid",
+          "Lymph (interstitial fluid)",
+          "Cerebrospinal fluid",
+          "Pleural fluid"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which white blood cells are responsible for producing targeted antibodies?",
+        "options": [
+          "B-lymphocytes (plasma cells)",
+          "Erythrocytes",
+          "Platelets",
+          "Basophils"
+        ],
+        "answer": 0
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "levelNumber": "12",
+    "title": "Level 12",
+    "topic": "Level 12",
+    "videoUrl": "https://www.youtube.com/embed/_7rWCg_xX_8",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Reproductive System</u> ensures species continuation through gamete production, sex hormone secretion, and fertilization support. For <span class=\"text-purple-700 font-semibold\">example : ovaries , testes, uterus & fallopian tubes</span>.<br><br><u class=\"font-semibold\">Reproductive Organs</u> synthesize sex steroids and nurture embryonic life. For <span class=\"text-blue-500 font-semibold\">example</span> : Testes (<span class=\"text-blue-500 font-medium\">Spermatogenesis(Produce sperm cells and testosterone)</span>), Ovaries (<span class=\"text-blue-500 font-medium\">Oogenesis(Release ova and secrete estrogen/progesterone)</span>), Fallopian Tubes (<span class=\"text-blue-500 font-medium\">Fertilization site(Normal junction where sperm fertilizes ovum)</span>), Uterus (<span class=\"text-blue-500 font-medium\">Gestation chamber(Nurtures fetus throughout gestation)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "Where does human egg fertilization typically take place?",
+        "options": [
+          "Uterus",
+          "Fallopian tube (oviduct)",
+          "Ovary",
+          "Cervix"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which female reproductive organ provides the environment for fetal development during gestation?",
+        "options": [
+          "Vagina",
+          "Uterus",
+          "Peritoneum",
+          "Bladder"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What male gonads produce spermatozoa and testosterone?",
+        "options": [
+          "Prostate",
+          "Testes",
+          "Epididymis",
+          "Seminal vesicles"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which primary female hormones are synthesized by the ovaries?",
+        "options": [
+          "Insulin and glucagon",
+          "Estrogen and progesterone",
+          "Aldosterone and renin",
+          "Melatonin and calcitonin"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is the specialized cellular division that produces haploid gametes called?",
+        "options": [
+          "Mitosis",
+          "Meiosis",
+          "Apoptosis",
+          "Cytokinesis"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "levelNumber": "13",
+    "title": "Level 13",
+    "topic": "Level 13",
+    "videoUrl": "https://www.youtube.com/embed/5U2_012hKzE",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Anatomical Terminology</u> standardizes medical documentation so providers communicate without directional ambiguity. For <span class=\"text-purple-700 font-semibold\">example : sagittal plane , transverse plane, coronal plane & anatomical position</span>.<br><br><u class=\"font-semibold\">Directional References</u> establish spatial orientation in medical coding. For <span class=\"text-blue-500 font-semibold\">example</span> : Anterior / Ventral (<span class=\"text-blue-500 font-medium\">Front orientation(Toward the front surface of body)</span>), Posterior / Dorsal (<span class=\"text-blue-500 font-medium\">Back orientation(Toward the spine or rear surface)</span>), Proximal vs Distal (<span class=\"text-blue-500 font-medium\">Limb reference(Closer to trunk vs farther from point of attachment)</span>), Sagittal plane (<span class=\"text-blue-500 font-medium\">Sectional cut(Divides body into right and left halves)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "Which body plane divides the body into anterior (front) and posterior (back) sections?",
+        "options": [
+          "Sagittal plane",
+          "Coronal (Frontal) plane",
+          "Transverse (Horizontal) plane",
+          "Midsagittal plane"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What directional term describes a structure closer to the attachment point of a limb?",
+        "options": [
+          "Distal",
+          "Proximal",
+          "Inferior",
+          "Lateral"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "In standard anatomical position, how are the palms of the hands facing?",
+        "options": [
+          "Facing backward",
+          "Facing forward (anteriorly)",
+          "Facing inward toward thighs",
+          "Clenched in fists"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "Which plane divides the body into superior (upper) and inferior (lower) halves?",
+        "options": [
+          "Transverse (Horizontal) plane",
+          "Coronal plane",
+          "Sagittal plane",
+          "Oblique plane"
+        ],
+        "answer": 0
+      },
+      {
+        "q": "What directional term means further away from the midline of the body?",
+        "options": [
+          "Medial",
+          "Lateral",
+          "Deep",
+          "Posterior"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "levelNumber": "14",
+    "title": "Level 14",
+    "topic": "Level 14",
+    "videoUrl": "https://www.youtube.com/embed/zQGOcOUBi6s",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Pathophysiology</u> studies the functional disruptions and cellular changes caused by disease or injury. For <span class=\"text-purple-700 font-semibold\">example : inflammation , ischemia, necrosis & neoplasia</span>.<br><br><u class=\"font-semibold\">Pathological Mechanisms</u> dictate specific diagnostic coding criteria. For <span class=\"text-blue-500 font-semibold\">example</span> : Acute Inflammation (<span class=\"text-blue-500 font-medium\">Cardinal signs(Rubor, calor, tumor, dolor and loss of function)</span>), Ischemia (<span class=\"text-blue-500 font-medium\">Hypoxic deficit(Insufficient arterial blood supply causing cellular hypoxia)</span>), Infarction (<span class=\"text-blue-500 font-medium\">Tissue necrosis(Localized cell death resulting from severe prolonged ischemia)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "What are the classic cardinal signs of acute inflammation?",
+        "options": [
+          "Fever, fatigue, and jaundice",
+          "Redness, heat, swelling, pain, and loss of function",
+          "Nausea, dizziness, and low blood pressure",
+          "Cyanosis and muscle paralysis"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What pathological term describes an inadequate blood supply to an organ or tissue?",
+        "options": [
+          "Infarction",
+          "Ischemia",
+          "Hyperemia",
+          "Fibrosis"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is the medical definition of necrosis?",
+        "options": [
+          "Controlled cell regeneration",
+          "Irreversible cellular injury and tissue death",
+          "Excessive fat storage",
+          "Normal bone growth"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What does a myocardial infarction (MI) represent in clinical pathophysiology?",
+        "options": [
+          "Temporary heart palpitations",
+          "Death of heart muscle tissue due to prolonged lack of oxygenated blood",
+          "Heart valve regurgitation only",
+          "Excessive pericardial fluid"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What term describes the spread of cancer cells from an original site to distant organs?",
+        "options": [
+          "Hyperplasia",
+          "Metastasis",
+          "Mitosis",
+          "Angiogenesis"
+        ],
+        "answer": 1
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "levelNumber": "15",
+    "title": "Level 15",
+    "topic": "Level 15",
+    "videoUrl": "https://www.youtube.com/embed/n3W6N2_vFzs",
+    "theoryHtml": "<p class=\"leading-relaxed text-gray-900 text-lg\"><u class=\"font-semibold\">Clinical Coding</u> bridges clinical physiology documentation to standardized ICD-10-CM diagnosis codes for claims, quality metrics, and analytics. For <span class=\"text-purple-700 font-semibold\">example : etiology , manifestation, laterality & 7th character extensions</span>.<br><br><u class=\"font-semibold\">Coding Conventions</u> demand anatomical specificity and documented medical necessity. For <span class=\"text-blue-500 font-semibold\">example</span> : Laterality (<span class=\"text-blue-500 font-medium\">Side specification(Differentiating right limb, left limb, or bilateral)</span>), Excludes1 Notes (<span class=\"text-blue-500 font-medium\">Mutually exclusive(Indicates two conditions cannot occur together)</span>), Combination Codes (<span class=\"text-blue-500 font-medium\">Unified diagnosis(Single code classifying etiology and secondary manifestation)</span>).</p>",
+    "notice": "Study the theory, go to the task page, answer the questions, complete the level, and open the page for the next level.",
+    "mcqs": [
+      {
+        "q": "Why is anatomical laterality (right vs. left) critical in modern ICD-10-CM coding?",
+        "options": [
+          "It increases hospital paperwork only",
+          "It specifies the exact anatomical side affected for accurate treatment and billing",
+          "It determines the physician's hourly wage",
+          "It is only required for dental procedures"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What does an 'Excludes1' instructional note mean in the ICD-10-CM tabular list?",
+        "options": [
+          "The two codes are interchangeable",
+          "The conditions are mutually exclusive and should NOT be billed together",
+          "The code requires a 7th character modifier",
+          "The code is optional for reimbursement"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What is a combination code in medical coding?",
+        "options": [
+          "A code with multiple letters",
+          "A single code used to classify two diagnoses or an etiology and manifestation together",
+          "A password for hospital databases",
+          "A code used only in emergency rooms"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What does a 7th character extension often indicate in injury and trauma coding?",
+        "options": [
+          "Patient income bracket",
+          "Episode of care (e.g. initial, subsequent, or sequela)",
+          "Hospital floor number",
+          "Insurance co-pay amount"
+        ],
+        "answer": 1
+      },
+      {
+        "q": "What principle governs that diagnostic codes must justify procedural codes for payment?",
+        "options": [
+          "Fee-for-service mandate",
+          "Medical Necessity",
+          "Prior authorization waiver",
+          "Peer review protocol"
+        ],
+        "answer": 1
+      }
+    ]
+  }
+]
