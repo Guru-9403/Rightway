@@ -290,6 +290,7 @@ export default function SignupPage() {
         )}
 
         {/* Google Sign-in: Only shown if Google Auth is set up */}
+        {/* Temporarily hidden - uncomment below to re-enable
         {hasGoogleAuth && (
           <>
             <button
@@ -308,6 +309,7 @@ export default function SignupPage() {
             </div>
           </>
         )}
+        */}
 
         {/* Full Name */}
         <div className="mb-4">

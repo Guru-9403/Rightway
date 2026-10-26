@@ -14,6 +14,7 @@ const xlsx = require("xlsx");
 const { z } = require("zod");
 
 const app = express();
+app.set("trust proxy", 1);
 
 const PORT = Number(process.env.PORT) || 5000;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -291,8 +292,11 @@ const forgotPasswordSchema = z.object({
 });
 
 const resetPasswordSchema = z.object({
-  token: z.string().min(1, "Token is required."),
-  password: z.string().min(8, "Password must be at least 8 characters."),
+  token: z.string().optional(),
+  otp: z.string().optional(),
+  email: z.string().trim().email().optional(),
+  password: z.string().min(6, "Password must be at least 6 characters.").optional(),
+  newPassword: z.string().min(6, "Password must be at least 6 characters.").optional(),
 });
 
 const verifyOtpSchema = z.object({
@@ -353,7 +357,8 @@ function signRefreshToken(user) {
 }
 
 function hashToken(raw) {
-  return crypto.createHash("sha256").update(raw).digest("hex");
+  if (raw === null || raw === undefined) return "";
+  return crypto.createHash("sha256").update(String(raw)).digest("hex");
 }
 
 function setAuthCookies(res, accessToken, refreshToken) {
@@ -511,7 +516,7 @@ const resendOtpRateLimiter = createRateLimiter({
 
 const forgotPasswordRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  maxAttempts: 5,
+  maxAttempts: 15,
   message: "Too many password reset requests. Please try again in 15 minutes.",
 });
 
@@ -1153,7 +1158,7 @@ app.post(["/api/auth/logout", "/api/logout"], async (req, res) => {
   }
 });
 
-// Forgot Password Handler (Same response whether email exists or not)
+// Forgot Password Handler - Generates 6-digit OTP and emails to user
 app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRateLimiter, async (req, res) => {
   try {
     const parseResult = forgotPasswordSchema.safeParse(req.body);
@@ -1173,44 +1178,69 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
       userAgent: req.headers["user-agent"],
     });
 
-    if (user && !user.deletedAt && !user.isBlocked) {
-      const rawResetToken = crypto.randomBytes(32).toString("hex");
-      user.passwordResetTokenHash = hashToken(rawResetToken);
-      user.passwordResetExpiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 min expiry
-      await user.save();
-
-      const resetUrl = `${FRONTEND_URL}/reset-password?token=${rawResetToken}`;
-      const resetHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #ffffff;">
-          <h2 style="color: #111827; margin-bottom: 8px;">Reset Your Password</h2>
-          <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">Hi <strong>${user.name}</strong>,</p>
-          <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
-            We received a request to reset your password for your <strong>Rightway Skill Builder</strong> account.
-          </p>
-          <div style="margin: 20px 0;">
-            <a href="${resetUrl}" style="background-color: #dc2626; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Reset Password</a>
-          </div>
-          <p style="color: #6b7280; font-size: 12px;">This link is single-use and will expire in 30 minutes.</p>
-          <p style="color: #6b7280; font-size: 12px;">If you did not request this, please safely ignore this email.</p>
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-          <p style="color: #6b7280; font-size: 13px; margin: 0;">
-            Signed,<br />
-            <strong style="color: #111827;">Rightway Skill Builder</strong>
-          </p>
-        </div>
-      `;
-
-      sendResendEmail({
-        to: cleanEmail,
-        subject: "Reset your password - Rightway Skill Builder",
-        html: resetHtml,
-      }).catch((err) => console.error("Forgot password email error:", err));
+    if (!user || user.deletedAt) {
+      return res.status(404).json({ message: "No registered account found with this email." });
     }
 
-    // ALWAYS return identical response whether email exists or not to prevent user enumeration
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "This account has been suspended. Please contact support." });
+    }
+
+    // Generate 6-digit numeric OTP
+    const otp = String(crypto.randomInt(100000, 1000000));
+    user.passwordResetTokenHash = hashToken(otp);
+    user.passwordResetExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min expiry
+    await user.save();
+
+    const resetHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 540px; margin: 0 auto; padding: 32px 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="margin: 0; color: #111827; font-size: 22px; font-weight: 800;">
+            Rightway <span style="color: #dc2626;">Skill Builder</span>
+          </h2>
+          <p style="color: #6b7280; font-size: 13px; margin: 4px 0 0;">Interactive Professional Courses</p>
+        </div>
+        <h3 style="color: #111827; font-size: 18px; font-weight: 700; margin: 0 0 12px;">Reset Your Password</h3>
+        <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0 0 12px;">Hi <strong>${user.name}</strong>,</p>
+        <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0 0 20px;">
+          We received a request to reset your password. Use the following 6-digit verification code:
+        </p>
+        <div style="background-color: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
+          <span style="font-family: 'Courier New', monospace; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #dc2626;">
+            ${otp}
+          </span>
+        </div>
+        <p style="color: #6b7280; font-size: 13px; line-height: 1.5; margin: 0 0 16px;">
+          ⏳ This code is single-use and will expire in <strong>15 minutes</strong>.
+        </p>
+        <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+          If you did not request a password reset, please ignore this email. Your account remains completely secure.
+        </p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+        <p style="color: #6b7280; font-size: 12px; margin: 0; text-align: center;">
+          Rightway Skill Builder Security Team
+        </p>
+      </div>
+    `;
+
+    try {
+      await sendResendEmail({
+        to: cleanEmail,
+        subject: "Your Password Reset OTP - Rightway Skill Builder",
+        html: resetHtml,
+        text: `Your Rightway Skill Builder password reset code is ${otp}. It expires in 15 minutes.`,
+      });
+    } catch (emailErr) {
+      console.error("Forgot password email send error:", emailErr.message);
+      // If email fails, return informative error
+      return res.status(500).json({
+        message: `Could not deliver OTP email: ${emailErr.message}. Please check your email or try again.`,
+      });
+    }
+
     res.json({
       success: true,
-      message: "If an account with that email exists, a password reset link has been sent.",
+      message: "A 6-digit password reset code has been sent to your email.",
     });
   } catch (err) {
     console.error("Forgot password error:", err);
@@ -1218,33 +1248,60 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
   }
 });
 
-// Reset Password Handler
+// Reset Password Handler - Verifies 6-digit OTP and updates password
 app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) => {
   try {
     const parseResult = resetPasswordSchema.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid data." });
+      return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid input data." });
     }
 
-    const { token, password } = req.body;
-    const tokenHash = hashToken(token);
+    const { email, otp, token, password, newPassword } = req.body;
+    const finalPassword = password || newPassword;
 
-    const user = await User.findOne({
-      passwordResetTokenHash: tokenHash,
-      passwordResetExpiresAt: { $gt: new Date() },
-    }).select("+passwordResetTokenHash");
+    if (!finalPassword || String(finalPassword).length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    }
 
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired password reset link." });
+    let user = null;
+
+    if (otp && email) {
+      const cleanEmail = email.toLowerCase().trim();
+      const codeClean = String(otp).trim();
+      const otpHash = hashToken(codeClean);
+
+      user = await User.findOne({
+        email: cleanEmail,
+        passwordResetTokenHash: otpHash,
+        passwordResetExpiresAt: { $gt: new Date() },
+      }).select("+passwordResetTokenHash");
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired 6-digit verification code. Please request a new code." });
+      }
+    } else if (token) {
+      const tokenHash = hashToken(token);
+      user = await User.findOne({
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: { $gt: new Date() },
+      }).select("+passwordResetTokenHash");
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired password reset link." });
+      }
+    } else {
+      return res.status(400).json({ message: "Email and 6-digit verification code are required." });
     }
 
     // Bcrypt cost 12
-    user.password = await bcrypt.hash(password, 12);
+    user.password = await bcrypt.hash(finalPassword, 12);
     user.passwordResetTokenHash = null;
     user.passwordResetExpiresAt = null;
     user.refreshTokenHash = null; // Revoke existing sessions on password reset
     user.loginAttempts = 0;
     user.lockUntil = null;
+    user.emailVerified = true;
+    user.isEmailVerified = true;
     await user.save();
 
     clearAuthCookies(res);
@@ -1260,7 +1317,7 @@ app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) =
 
     res.json({
       success: true,
-      message: "Password has been successfully reset. Please log in with your new password.",
+      message: "Password has been successfully updated! You can now log in with your new password.",
     });
   } catch (err) {
     console.error("Reset password error:", err);

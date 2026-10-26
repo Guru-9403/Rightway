@@ -34,7 +34,10 @@ export const api = {
   logout: () => apiFetch("/auth/logout", { method: "POST", auth: true }),
   refresh: () => apiFetch("/auth/refresh", { method: "POST" }),
   forgotPassword: (email) => apiFetch("/auth/forgot-password", { method: "POST", body: { email } }),
-  resetPassword: (token, password) => apiFetch("/auth/reset-password", { method: "POST", body: { token, password } }),
+  resetPassword: (payload, password) => {
+    const body = typeof payload === "object" ? payload : { token: payload, password };
+    return apiFetch("/auth/reset-password", { method: "POST", body });
+  },
   changePassword: (currentPassword, newPassword) =>
     apiFetch("/auth/change-password", { method: "POST", auth: true, body: { currentPassword, newPassword } }),
   verifyEmail: (token) => apiFetch(`/auth/verify-email?token=${encodeURIComponent(token)}`),
