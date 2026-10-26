@@ -57,6 +57,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5500",
   "http://localhost:3000",
   "https://rightwaycourses7.netlify.app",
+  "https://rightwayskillbuilder.vercel.app",
 ]
   .filter(Boolean)
   .map((s) => s.trim().replace(/\/$/, ""));
