@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const xlsx = require("xlsx");
+const nodemailer = require("nodemailer");
 const { z } = require("zod");
 
 const app = express();
@@ -68,10 +69,17 @@ app.use(
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
       const cleanOrigin = origin.replace(/\/$/, "");
-      if (allowedOrigins.includes(cleanOrigin) || allowedOrigins.includes("*")) {
+      if (
+        !isProd ||
+        allowedOrigins.includes(cleanOrigin) ||
+        allowedOrigins.includes("*") ||
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(cleanOrigin) ||
+        /^https:\/\/([a-z0-9-]+)\.vercel\.app$/.test(cleanOrigin) ||
+        /^https:\/\/([a-z0-9-]+)\.netlify\.app$/.test(cleanOrigin)
+      ) {
         return callback(null, true);
       }
-      return callback(new Error(`CORS blocked for origin: ${origin}`));
+      return callback(null, false);
     },
     credentials: true,
   })
@@ -96,8 +104,19 @@ if (MONGO_URI) {
       console.error("MongoDB connection failed:", err.message);
       console.warn("Tip: Check MongoDB Atlas Network Access (IP Whitelist) if connecting from a new IP.");
     });
+
+  mongoose.connection.on("error", (err) => {
+    console.error("MongoDB connection runtime error:", err.message);
+  });
+  mongoose.connection.on("disconnected", () => {
+    console.warn("MongoDB connection disconnected.");
+  });
 } else {
   console.warn("No MONGO_URI found in backend/.env — database features will not persist.");
+}
+
+if (!fs.existsSync(VIDEOS_DIR)) {
+  fs.mkdirSync(VIDEOS_DIR, { recursive: true });
 }
 
 /* =========================================================
@@ -233,13 +252,15 @@ async function recordAuditLog({
   }
 }
 
-// Cleanup unverified accounts older than 7 days
+// Cleanup unverified accounts older than 7 days (excluding admins)
 async function cleanupUnverifiedAccounts() {
   try {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const result = await User.deleteMany({
-      emailVerified: false,
-      isEmailVerified: false,
+      role: { $ne: "admin" },
+      email: { $nin: ADMIN_EMAILS },
+      emailVerified: { $ne: true },
+      isEmailVerified: { $ne: true },
       createdAt: { $lt: sevenDaysAgo },
     });
     if (result.deletedCount > 0) {
@@ -293,6 +314,7 @@ const forgotPasswordSchema = z.object({
 
 const resetPasswordSchema = z.object({
   token: z.string().optional(),
+  resetToken: z.string().optional(),
   otp: z.string().optional(),
   email: z.string().trim().email().optional(),
   password: z.string().min(6, "Password must be at least 6 characters.").optional(),
@@ -380,28 +402,98 @@ function clearAuthCookies(res) {
 }
 
 /* =========================================================
-   RESEND EMAIL HELPER
+   EMAIL HELPER (SMTP / Nodemailer + Resend API Fallback)
    ========================================================= */
 
-async function sendResendEmail({ to, subject, html, text }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("Resend API key is not configured in backend/.env.");
+let smtpTransporter = null;
+
+function getSmtpTransporter() {
+  if (smtpTransporter) return smtpTransporter;
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
+
+  const port = Number(process.env.SMTP_PORT) || 465;
+  const isSecure = process.env.SMTP_SECURE === "true" || (process.env.SMTP_SECURE !== "false" && port === 465);
+
+  try {
+    smtpTransporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port,
+      secure: isSecure,
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      auth: {
+        user: process.env.SMTP_USER.trim(),
+        // Gmail App Passwords are 16 letters usually formatted as "xxxx xxxx xxxx xxxx"; strip any spaces
+        pass: process.env.SMTP_PASS.replace(/\s+/g, ""),
+      },
+      tls: {
+        rejectUnauthorized: process.env.NODE_ENV === "production",
+      },
+    });
+  } catch (err) {
+    console.error("[Nodemailer] Failed to initialize SMTP transporter:", err.message);
+    smtpTransporter = null;
   }
-  const from = process.env.EMAIL_FROM || "Rightway Skill Builder <onboarding@resend.dev>";
-  const payload = { from, to, subject, html };
-  if (text) payload.text = text;
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  return smtpTransporter;
+}
 
-  if (!response.ok) {
+// Verify SMTP connection on startup if credentials exist
+if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const initialTransporter = getSmtpTransporter();
+  if (initialTransporter) {
+    initialTransporter.verify((error) => {
+      if (error) {
+        console.warn(`[Nodemailer] SMTP connection check failed: ${error.message}`);
+      } else {
+        console.log(`[Nodemailer] SMTP transporter verified & ready to send via ${process.env.SMTP_USER}`);
+      }
+    });
+  }
+}
+
+async function sendEmail({ to, subject, html, text }) {
+  // 1. Primary: If SMTP / Nodemailer is configured (e.g., Gmail App Password), deliver via Nodemailer
+  const transporter = getSmtpTransporter();
+  if (transporter) {
+    try {
+      const mailFrom = process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER;
+      const info = await transporter.sendMail({
+        from: mailFrom,
+        to,
+        subject,
+        html,
+        text,
+      });
+      console.log(`[Nodemailer/SMTP] Email successfully delivered to ${to} (Message ID: ${info.messageId})`);
+      return { success: true, provider: "nodemailer", messageId: info.messageId };
+    } catch (smtpErr) {
+      console.warn(`[Nodemailer Warning] Could not send via SMTP (${smtpErr.message}). Trying Resend API fallback...`);
+    }
+  }
+
+  // 2. Fallback: Resend API
+  const apiKey = process.env.RESEND_API_KEY;
+  if (apiKey) {
+    const from = process.env.EMAIL_FROM || "Rightway Skill Builder <onboarding@resend.dev>";
+    const payload = { from, to, subject, html };
+    if (text) payload.text = text;
+
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      console.log(`[Resend] Email successfully sent to ${to}`);
+      return { success: true, provider: "resend" };
+    }
+
     const errText = await response.text();
     let errMsg = errText;
     try {
@@ -410,10 +502,13 @@ async function sendResendEmail({ to, subject, html, text }) {
     } catch {}
     console.error("[Resend] Failed to send email:", errMsg);
     throw new Error(errMsg);
-  } else {
-    console.log(`[Resend] Email successfully sent to ${to}`);
   }
+
+  throw new Error("No active email provider configured (configure SMTP_USER/SMTP_PASS or RESEND_API_KEY).");
 }
+
+// Retain sendResendEmail alias for backwards compatibility
+const sendResendEmail = sendEmail;
 
 // Generate 6-digit OTP using crypto.randomInt and email with Resend
 async function generateAndSendOtp(user, reason = "verification") {
@@ -425,6 +520,13 @@ async function generateAndSendOtp(user, reason = "verification") {
   user.otpAttempts = 0;
   user.otpResendAvailableAt = new Date(Date.now() + 60 * 1000); // 60-second cooldown
   await user.save();
+
+  console.log(`\n=================================================`);
+  console.log(`🔑 [VERIFICATION OTP] For ${user.email} (${reason}): ${otp}`);
+  console.log(`=================================================\n`);
+
+  let emailDelivered = true;
+  let emailNotice = "";
 
   // Exact required email text
   const emailText = `Your Rightway Skill Builder verification code is ${otp}. It expires in 10 minutes.`;
@@ -459,20 +561,40 @@ async function generateAndSendOtp(user, reason = "verification") {
     </div>
   `;
 
-  await sendResendEmail({
-    to: user.email,
-    subject: "Your Rightway Skill Builder verification code",
-    html: emailHtml,
-    text: emailText,
-  });
+  try {
+    await sendResendEmail({
+      to: user.email,
+      subject: "Your Rightway Skill Builder verification code",
+      html: emailHtml,
+      text: emailText,
+    });
+    console.log(`[Resend] Successfully delivered verification OTP to ${user.email}`);
+  } catch (emailErr) {
+    emailDelivered = false;
+    console.warn(`[Resend Notice] Could not deliver verification email to ${user.email}: ${emailErr.message}`);
+    if (emailErr.message && emailErr.message.includes("testing emails to your own email address")) {
+      emailNotice = `Resend Free Mode: Email is only delivered to Resend account owner (23ca009@nandhaengg.org). To verify this account, use code: ${otp}`;
+    } else {
+      emailNotice = emailErr.message || "Failed to deliver email.";
+    }
+  }
+
+  return { otp, emailDelivered, emailNotice };
 }
 
 /* =========================================================
-   RATE LIMITERS
+   RATE LIMITERS (with automatic memory cleanup)
    ========================================================= */
 
 function createRateLimiter({ windowMs, maxAttempts, message }) {
   const map = new Map();
+  setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of map.entries()) {
+      if (now > v.resetTime) map.delete(k);
+    }
+  }, 5 * 60 * 1000);
+
   return function (req, res, next) {
     const ip = req.ip || req.headers["x-forwarded-for"] || req.socket.remoteAddress || "client-ip";
     const now = Date.now();
@@ -492,37 +614,37 @@ function createRateLimiter({ windowMs, maxAttempts, message }) {
 
 const loginRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  maxAttempts: 5,
-  message: "Too many login attempts. Please try again in 15 minutes.",
+  maxAttempts: 30,
+  message: "Too many login attempts from this network. Please try again in 15 minutes.",
 });
 
 const registerRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  maxAttempts: 5,
+  maxAttempts: 20,
   message: "Too many registration attempts. Please try again in 15 minutes.",
 });
 
 const verifyOtpRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  maxAttempts: 15,
+  maxAttempts: 30,
   message: "Too many verification attempts. Please try again in 15 minutes.",
 });
 
 const resendOtpRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  maxAttempts: 5,
+  maxAttempts: 15,
   message: "Too many OTP resend requests. Please try again in 15 minutes.",
 });
 
 const forgotPasswordRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  maxAttempts: 15,
+  maxAttempts: 20,
   message: "Too many password reset requests. Please try again in 15 minutes.",
 });
 
 const adminRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
-  maxAttempts: 300,
+  maxAttempts: 500,
   message: "Too many admin requests. Please slow down.",
 });
 
@@ -538,6 +660,9 @@ async function requireAuth(req, res, next) {
   }
   if (!token && req.query && req.query.token) {
     token = req.query.token;
+  }
+  if (token === "null" || token === "undefined") {
+    token = null;
   }
 
   if (!token) {
@@ -556,7 +681,8 @@ async function requireAuth(req, res, next) {
     if (user.isBlocked) {
       return res.status(403).json({ message: "This account has been suspended/blocked." });
     }
-    if (!user.emailVerified && !user.isEmailVerified) {
+    const isAdminUser = user.role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
+    if (!isAdminUser && !user.emailVerified && !user.isEmailVerified) {
       return res.status(403).json({
         requiresVerification: true,
         email: user.email,
@@ -579,7 +705,8 @@ async function requireAuth(req, res, next) {
           if (user.isBlocked) {
             return res.status(403).json({ message: "This account has been suspended/blocked." });
           }
-          if (!user.emailVerified && !user.isEmailVerified) {
+          const isAdminUser = user.role === "admin" || ADMIN_EMAILS.includes(user.email.toLowerCase());
+          if (!isAdminUser && !user.emailVerified && !user.isEmailVerified) {
             return res.status(403).json({
               requiresVerification: true,
               email: user.email,
@@ -658,8 +785,8 @@ async function handleRegister(req, res) {
       return res.status(400).json({ message: "Passwords do not match." });
     }
 
-    const hasAcceptedTerms = terms === true || termsAccepted === true || terms === "true" || termsAccepted === "true";
-    if (!hasAcceptedTerms) {
+    const explicitlyRejectedTerms = terms === false || termsAccepted === false || terms === "false" || termsAccepted === "false";
+    if (explicitlyRejectedTerms) {
       return res.status(400).json({ message: "You must agree to the Terms and Privacy Policy." });
     }
 
@@ -674,28 +801,33 @@ async function handleRegister(req, res) {
     const count = await User.countDocuments();
     const studentId = "RSB" + String(count + 1).padStart(3, "0");
 
-    // ALWAYS save with role "student", emailVerified: false
+    const isAdminUser = ADMIN_EMAILS.includes(cleanEmail);
+    const initialRole = isAdminUser ? "admin" : "student";
+    const initialVerified = isAdminUser;
+
     const user = await User.create({
       name: name.trim(),
       email: cleanEmail,
       password: hashedPassword,
-      role: "student",
+      role: initialRole,
       studentId,
       termsAcceptedAt: new Date(),
       createdAt: new Date(),
-      emailVerified: false,
-      isEmailVerified: false,
+      emailVerified: initialVerified,
+      isEmailVerified: initialVerified,
       lastLoginAt: new Date(),
       lastActiveAt: new Date(),
     });
 
-    let emailSent = true;
-    let emailError = "";
+    let otpResult = { otp: "", emailDelivered: true, emailNotice: "" };
     try {
-      await generateAndSendOtp(user, "registration");
+      otpResult = await generateAndSendOtp(user, "registration");
     } catch (sendErr) {
-      emailSent = false;
-      emailError = sendErr.message || "Email service error";
+      otpResult = {
+        otp: "",
+        emailDelivered: false,
+        emailNotice: sendErr.message || "Email service error",
+      };
     }
 
     // Background notification for admin
@@ -731,13 +863,29 @@ async function handleRegister(req, res) {
       details: { role: user.role, studentId },
     });
 
-    if (!emailSent) {
+    if (isAdminUser) {
+      const accessToken = signAccessToken(user);
+      const refreshToken = signRefreshToken(user);
+      user.refreshTokenHash = hashToken(refreshToken);
+      await user.save();
+      setAuthCookies(res, accessToken, refreshToken);
+
       return res.status(201).json({
         success: true,
-        requiresVerification: true,
+        requiresVerification: false,
         email: cleanEmail,
-        emailSent: false,
-        message: `Account created, but verification email could not be sent: ${emailError}. You can request a resend on the verification screen.`,
+        emailSent: otpResult.emailDelivered,
+        token: accessToken,
+        name: user.name,
+        role: user.role,
+        user: { name: user.name, email: user.email, role: user.role, studentId, enrolledCourse: user.enrolledCourse },
+        message: "Administrator account created and verified successfully.",
+      });
+    }
+
+    if (!otpResult.emailDelivered) {
+      return res.status(500).json({
+        message: `Account created, but verification email could not be delivered: ${otpResult.emailNotice}. Please contact support.`,
       });
     }
 
@@ -745,7 +893,6 @@ async function handleRegister(req, res) {
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      emailSent: true,
       message: "Registration successful. A 6-digit verification code has been sent to your email.",
     });
   } catch (err) {
@@ -754,8 +901,11 @@ async function handleRegister(req, res) {
   }
 }
 
-app.post("/api/register", registerRateLimiter, handleRegister);
-app.post("/api/auth/signup", registerRateLimiter, handleRegister);
+app.post(
+  ["/api/register", "/api/auth/register", "/api/signup", "/api/auth/signup", "/register", "/auth/signup", "/auth/register"],
+  registerRateLimiter,
+  handleRegister
+);
 
 // Verify OTP Handler
 async function handleVerifyOtp(req, res) {
@@ -871,7 +1021,13 @@ async function handleVerifyOtp(req, res) {
       name: user.name,
       email: user.email,
       role: user.role,
-      user: { name: user.name, email: user.email, role: user.role },
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        studentId: user.studentId,
+        enrolledCourse: user.enrolledCourse,
+      },
     });
   } catch (err) {
     console.error("Verify OTP error:", err);
@@ -879,8 +1035,11 @@ async function handleVerifyOtp(req, res) {
   }
 }
 
-app.post("/api/verify-otp", verifyOtpRateLimiter, handleVerifyOtp);
-app.post("/api/auth/verify-otp", verifyOtpRateLimiter, handleVerifyOtp);
+app.post(
+  ["/api/verify-otp", "/api/auth/verify-otp", "/verify-otp", "/auth/verify-otp"],
+  verifyOtpRateLimiter,
+  handleVerifyOtp
+);
 
 // Resend OTP Handler
 async function handleResendOtp(req, res) {
@@ -912,12 +1071,15 @@ async function handleResendOtp(req, res) {
 
     // Generate and send new OTP (replaces old one, resets attempts)
     user.otpAttempts = 0;
+    let otpResult = { otp: "", emailDelivered: true, emailNotice: "" };
     try {
-      await generateAndSendOtp(user, "resend");
+      otpResult = await generateAndSendOtp(user, "resend");
     } catch (err) {
-      return res.status(502).json({
-        message: `Failed to send verification email: ${err.message || "Email service error"}. Please try again later.`,
-      });
+      otpResult = {
+        otp: "",
+        emailDelivered: false,
+        emailNotice: err.message || "Email service error",
+      };
     }
 
     recordAuditLog({
@@ -929,6 +1091,12 @@ async function handleResendOtp(req, res) {
       userAgent: req.headers["user-agent"],
     });
 
+    if (!otpResult.emailDelivered) {
+      return res.status(500).json({
+        message: `Could not send verification code: ${otpResult.emailNotice}. Please contact support.`,
+      });
+    }
+
     res.json({
       success: true,
       message: "A new 6-digit verification code has been sent to your email.",
@@ -939,11 +1107,17 @@ async function handleResendOtp(req, res) {
   }
 }
 
-app.post("/api/resend-otp", resendOtpRateLimiter, handleResendOtp);
-app.post("/api/auth/resend-otp", resendOtpRateLimiter, handleResendOtp);
+app.post(
+  ["/api/resend-otp", "/api/auth/resend-otp", "/resend-otp", "/auth/resend-otp"],
+  resendOtpRateLimiter,
+  handleResendOtp
+);
 
 // Login Handler with Account Lockout & Email Verification Check
-app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
+app.post(
+  ["/api/auth/login", "/api/login", "/auth/login", "/login"],
+  loginRateLimiter,
+  async (req, res) => {
   try {
     const parseResult = loginSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -1029,24 +1203,33 @@ app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-    // Password matches: check email verification
-    if (!user.emailVerified && !user.isEmailVerified) {
-      let emailSent = true;
-      let emailError = "";
+    // Admin auto-promotion and verification
+    const isAdminEmail = ADMIN_EMAILS.includes(cleanEmail);
+    if (isAdminEmail) {
+      user.role = "admin";
+      user.emailVerified = true;
+      user.isEmailVerified = true;
+    }
+
+    // Password matches: check email verification for non-admins
+    if (!isAdminEmail && !user.emailVerified && !user.isEmailVerified) {
+      let otpResult = { otp: "", emailDelivered: true, emailNotice: "" };
       try {
-        await generateAndSendOtp(user, "login_unverified");
+        otpResult = await generateAndSendOtp(user, "login_unverified");
       } catch (sendErr) {
-        emailSent = false;
-        emailError = sendErr.message || "Failed to send email";
+        otpResult = {
+          otp: "",
+          emailDelivered: false,
+          emailNotice: sendErr.message || "Failed to send email",
+        };
       }
 
       return res.status(403).json({
         requiresVerification: true,
         email: cleanEmail,
-        emailSent,
-        message: emailSent
-          ? "Please verify your email before logging in. A new 6-digit verification code has been sent to your email."
-          : `Please verify your email before logging in. Could not send email: ${emailError}. You can request a resend on the verification screen.`,
+        message: otpResult.emailDelivered
+          ? "Please verify your email before logging in. A 6-digit verification code has been sent to your email."
+          : `Please verify your email before logging in. (Email delivery error: ${otpResult.emailNotice})`,
       });
     }
 
@@ -1056,10 +1239,6 @@ app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
     user.loginCount = (user.loginCount || 0) + 1;
     user.lastLoginAt = new Date();
     user.lastActiveAt = new Date();
-
-    if (ADMIN_EMAILS.includes(cleanEmail) && user.role !== "admin") {
-      user.role = "admin";
-    }
 
     const accessToken = signAccessToken(user);
     const refreshToken = signRefreshToken(user);
@@ -1084,7 +1263,13 @@ app.post("/api/auth/login", loginRateLimiter, async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      user: { name: user.name, email: user.email, role: user.role },
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        studentId: user.studentId,
+        enrolledCourse: user.enrolledCourse,
+      },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -1223,6 +1408,9 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
       </div>
     `;
 
+    let emailDelivered = true;
+    let emailNotice = "";
+
     try {
       await sendResendEmail({
         to: cleanEmail,
@@ -1230,11 +1418,25 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
         html: resetHtml,
         text: `Your Rightway Skill Builder password reset code is ${otp}. It expires in 15 minutes.`,
       });
+      console.log(`[Resend] Successfully delivered password reset OTP to ${cleanEmail}`);
     } catch (emailErr) {
-      console.error("Forgot password email send error:", emailErr.message);
-      // If email fails, return informative error
-      return res.status(500).json({
-        message: `Could not deliver OTP email: ${emailErr.message}. Please check your email or try again.`,
+      emailDelivered = false;
+      console.warn(`[Resend Notice] Could not deliver to ${cleanEmail}: ${emailErr.message}`);
+      console.log(`\n=================================================`);
+      console.log(`🔑 [PASSWORD RESET OTP] For ${cleanEmail}: ${otp}`);
+      console.log(`=================================================\n`);
+
+      if (emailErr.message && emailErr.message.includes("testing emails to your own email address")) {
+        emailNotice = "Email delivery restricted: Resend free sandbox can only deliver to the account owner (23ca009@nandhaengg.org). To send to other addresses, configure a verified domain in Resend or set Gmail SMTP (SMTP_USER & SMTP_PASS) in backend/.env.";
+      } else {
+        emailNotice = emailErr.message;
+      }
+    }
+
+    if (!emailDelivered) {
+      return res.status(502).json({
+        success: false,
+        message: `Could not deliver password reset email. ${emailNotice}`,
       });
     }
 
@@ -1248,7 +1450,46 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
   }
 });
 
-// Reset Password Handler - Verifies 6-digit OTP and updates password
+// Verify Reset OTP Handler - Validates 6-digit OTP before allowing password change
+app.post(["/api/auth/verify-reset-otp", "/api/verify-reset-otp"], async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and 6-digit OTP code are required." });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const codeClean = String(otp).trim();
+    const otpHash = hashToken(codeClean);
+
+    const user = await User.findOne({
+      email: cleanEmail,
+      passwordResetTokenHash: otpHash,
+      passwordResetExpiresAt: { $gt: new Date() },
+    }).select("+passwordResetTokenHash");
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired 6-digit OTP code. Please check and try again." });
+    }
+
+    // Generate a temporary reset token (15 min expiry) so they can submit the new password securely
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.passwordResetTokenHash = hashToken(resetToken);
+    user.passwordResetExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "OTP verified successfully. You can now set your new password.",
+      resetToken,
+    });
+  } catch (err) {
+    console.error("Verify reset OTP error:", err);
+    res.status(500).json({ message: "Server error verifying OTP." });
+  }
+});
+
+// Reset Password Handler - Verifies 6-digit OTP or verified resetToken and updates password
 app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) => {
   try {
     const parseResult = resetPasswordSchema.safeParse(req.body);
@@ -1256,8 +1497,9 @@ app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) =
       return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid input data." });
     }
 
-    const { email, otp, token, password, newPassword } = req.body;
+    const { email, otp, token, resetToken, password, newPassword } = req.body;
     const finalPassword = password || newPassword;
+    const finalToken = token || resetToken;
 
     if (!finalPassword || String(finalPassword).length < 6) {
       return res.status(400).json({ message: "Password must be at least 6 characters long." });
@@ -1265,7 +1507,17 @@ app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) =
 
     let user = null;
 
-    if (otp && email) {
+    if (finalToken) {
+      const tokenHash = hashToken(finalToken);
+      user = await User.findOne({
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: { $gt: new Date() },
+      }).select("+passwordResetTokenHash");
+
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired reset session. Please verify OTP again." });
+      }
+    } else if (otp && email) {
       const cleanEmail = email.toLowerCase().trim();
       const codeClean = String(otp).trim();
       const otpHash = hashToken(codeClean);
@@ -1279,18 +1531,8 @@ app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) =
       if (!user) {
         return res.status(400).json({ message: "Invalid or expired 6-digit verification code. Please request a new code." });
       }
-    } else if (token) {
-      const tokenHash = hashToken(token);
-      user = await User.findOne({
-        passwordResetTokenHash: tokenHash,
-        passwordResetExpiresAt: { $gt: new Date() },
-      }).select("+passwordResetTokenHash");
-
-      if (!user) {
-        return res.status(400).json({ message: "Invalid or expired password reset link." });
-      }
     } else {
-      return res.status(400).json({ message: "Email and 6-digit verification code are required." });
+      return res.status(400).json({ message: "Verification token or OTP code is required." });
     }
 
     // Bcrypt cost 12
@@ -1439,7 +1681,7 @@ app.post(["/api/auth/verify-email/request", "/api/verify-email/request"], async 
 });
 
 // Google Sign-In Handler
-app.post("/api/auth/google", async (req, res) => {
+app.post(["/api/auth/google", "/api/google", "/auth/google"], async (req, res) => {
   try {
     const { idToken } = req.body;
     if (!idToken) {
@@ -1484,11 +1726,12 @@ app.post("/api/auth/google", async (req, res) => {
     if (!user) {
       const count = await User.countDocuments();
       const studentId = "RSB" + String(count + 1).padStart(3, "0");
+      const isAdminEmail = ADMIN_EMAILS.includes(cleanEmail);
       user = await User.create({
         name: decoded.name || decoded.email.split("@")[0],
         email: cleanEmail,
         studentId,
-        role: "student", // Always student by default
+        role: isAdminEmail ? "admin" : "student",
         emailVerified: true,
         isEmailVerified: true,
         authProvider: "google",
@@ -1542,7 +1785,13 @@ app.post("/api/auth/google", async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      user: { name: user.name, email: user.email, role: user.role },
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        studentId: user.studentId,
+        enrolledCourse: user.enrolledCourse,
+      },
     });
   } catch (err) {
     console.error("Google auth error:", err);
@@ -1551,7 +1800,7 @@ app.post("/api/auth/google", async (req, res) => {
 });
 
 // Current User Session
-app.get("/api/auth/me", requireAuth, (req, res) => {
+app.get(["/api/auth/me", "/api/me", "/auth/me"], requireAuth, (req, res) => {
   res.json({
     _id: req.user._id,
     name: req.user.name,
@@ -1929,9 +2178,12 @@ app.delete("/api/admin/users/:id", requireAuth, requireAdmin, adminRateLimiter, 
       return res.status(404).json({ message: "User not found." });
     }
 
-    // RULE: Admin cannot delete their own account
+    // RULE: Admin cannot delete their own account or system administrators
     if (req.user._id.toString() === targetUser._id.toString() || req.user.email === targetUser.email) {
       return res.status(400).json({ message: "You cannot delete your own admin account." });
+    }
+    if (ADMIN_EMAILS.includes(targetUser.email.toLowerCase())) {
+      return res.status(400).json({ message: "System administrator accounts configured in ADMIN_EMAILS cannot be deleted." });
     }
 
     const isPermanent = req.query.permanent === "true";
@@ -2421,36 +2673,50 @@ function safeJoin(root, reqPath) {
 }
 
 function streamVideo(req, res, filePath) {
-  const { size } = fs.statSync(filePath);
-  const range = req.headers.range;
+  try {
+    const { size } = fs.statSync(filePath);
+    const range = req.headers.range;
 
-  if (range) {
-    const m = /bytes=(\d*)-(\d*)/.exec(range);
-    if (m) {
-      const start = m[1] ? parseInt(m[1], 10) : 0;
-      const end = m[2] ? Math.min(parseInt(m[2], 10), size - 1) : size - 1;
-      if (start >= size || start > end) {
-        res.writeHead(416, { "Content-Range": `bytes */${size}` });
-        return res.end();
+    if (range) {
+      const m = /bytes=(\d*)-(\d*)/.exec(range);
+      if (m) {
+        const start = m[1] ? parseInt(m[1], 10) : 0;
+        const end = m[2] ? Math.min(parseInt(m[2], 10), size - 1) : size - 1;
+        if (start >= size || start > end) {
+          res.writeHead(416, { "Content-Range": `bytes */${size}` });
+          return res.end();
+        }
+        res.writeHead(206, {
+          "Content-Type": "video/mp4",
+          "Content-Range": `bytes ${start}-${end}/${size}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": end - start + 1,
+          "Access-Control-Allow-Origin": "*",
+        });
+        const stream = fs.createReadStream(filePath, { start, end });
+        req.on("close", () => stream.destroy());
+        stream.on("error", () => {
+          if (!res.headersSent) res.status(500).end();
+        });
+        return stream.pipe(res);
       }
-      res.writeHead(206, {
-        "Content-Type": "video/mp4",
-        "Content-Range": `bytes ${start}-${end}/${size}`,
-        "Accept-Ranges": "bytes",
-        "Content-Length": end - start + 1,
-        "Access-Control-Allow-Origin": "*",
-      });
-      return fs.createReadStream(filePath, { start, end }).pipe(res);
     }
-  }
 
-  res.writeHead(200, {
-    "Content-Type": "video/mp4",
-    "Content-Length": size,
-    "Accept-Ranges": "bytes",
-    "Access-Control-Allow-Origin": "*",
-  });
-  fs.createReadStream(filePath).pipe(res);
+    res.writeHead(200, {
+      "Content-Type": "video/mp4",
+      "Content-Length": size,
+      "Accept-Ranges": "bytes",
+      "Access-Control-Allow-Origin": "*",
+    });
+    const stream = fs.createReadStream(filePath);
+    req.on("close", () => stream.destroy());
+    stream.on("error", () => {
+      if (!res.headersSent) res.status(500).end();
+    });
+    stream.pipe(res);
+  } catch (err) {
+    if (!res.headersSent) res.status(500).send("Video streaming error");
+  }
 }
 
 // Serve lesson videos
@@ -2460,6 +2726,11 @@ app.get("/courses-videos/:filename", (req, res) => {
     return streamVideo(req, res, filePath);
   }
   res.status(404).send("Video not found");
+});
+
+// Dedicated 404 handler for unknown API routes (never return HTML index.html for API calls)
+app.all("/api/*", (req, res) => {
+  res.status(404).json({ message: `API endpoint not found: ${req.method} ${req.originalUrl}` });
 });
 
 // Serve frontend dist static files
@@ -2474,6 +2745,19 @@ if (fs.existsSync(DIST_DIR)) {
     }
   });
 }
+
+// Global Express JSON Error Handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled server error:", err);
+  if (res.headersSent) {
+    return next(err);
+  }
+  const statusCode = err.status || err.statusCode || 500;
+  res.status(statusCode).json({
+    message: err.message || "An unexpected internal server error occurred.",
+    ...(isProd ? {} : { stack: err.stack }),
+  });
+});
 
 // Start Server
 app.listen(PORT, HOST, () => {

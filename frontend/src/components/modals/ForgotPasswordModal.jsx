@@ -7,9 +7,15 @@ export default function ForgotPasswordModal({
   initialEmail = "",
   onSuccess,
 }) {
-  const [step, setStep] = useState(1); // 1: Enter email, 2: Enter OTP & New Password, 3: Success
+  // Step 1: Enter email
+  // Step 2: Enter & Verify OTP
+  // Step 3: Enter & Save New Password (only after OTP is verified)
+  // Step 4: Success screen
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState(initialEmail);
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
+  const [resetToken, setResetToken] = useState("");
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,12 +30,13 @@ export default function ForgotPasswordModal({
 
   const otpInputsRef = useRef([]);
 
-  // Sync initial email when modal opens
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setEmail(initialEmail || "");
       setStep(1);
       setDigits(["", "", "", "", "", ""]);
+      setResetToken("");
       setNewPassword("");
       setConfirmPassword("");
       setError("");
@@ -78,7 +85,7 @@ export default function ForgotPasswordModal({
     return `${m}:${String(s).padStart(2, "0")}`;
   };
 
-  // Step 1: Send OTP to email
+  // STEP 1: Send OTP to email
   const handleSendOtp = async (e) => {
     e?.preventDefault();
     setError("");
@@ -99,7 +106,7 @@ export default function ForgotPasswordModal({
       setStep(2);
       setResendCooldown(60);
       setCountdown(900);
-      setInfo(`We have sent a 6-digit verification code to ${cleanEmail}.`);
+      setInfo(`We sent a 6-digit verification code to ${cleanEmail}. Please check your email.`);
       setTimeout(() => {
         otpInputsRef.current[0]?.focus();
       }, 100);
@@ -124,7 +131,7 @@ export default function ForgotPasswordModal({
       setDigits(["", "", "", "", "", ""]);
       setResendCooldown(60);
       setCountdown(900);
-      setInfo("A fresh 6-digit code has been sent to your Gmail.");
+      setInfo(`A fresh 6-digit OTP code has been sent to ${cleanEmail}. Please check your inbox.`);
       setTimeout(() => {
         otpInputsRef.current[0]?.focus();
       }, 100);
@@ -135,9 +142,8 @@ export default function ForgotPasswordModal({
     }
   };
 
-  // Handle single OTP digit change
+  // Handle single digit input
   const handleDigitChange = (index, value) => {
-    // Check if user pasted a multi-digit string
     const cleaned = value.replace(/\D/g, "");
     if (cleaned.length > 1) {
       const pasted = cleaned.slice(0, 6).split("");
@@ -182,16 +188,43 @@ export default function ForgotPasswordModal({
     }
   };
 
-  // Step 2: Verify OTP and save new password
-  const handleResetPassword = async (e) => {
+  // STEP 2: Verify OTP
+  const handleVerifyOtp = async (e, customOtp = null) => {
     e?.preventDefault();
     setError("");
 
-    const fullOtp = digits.join("").trim();
+    const fullOtp = (customOtp || digits.join("")).trim();
     if (fullOtp.length < 6) {
       setError("Please enter the complete 6-digit verification code.");
       return;
     }
+
+    setBusy(true);
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await api.verifyResetOtp(cleanEmail, fullOtp);
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.message || "Invalid or expired OTP code.");
+      }
+
+      // OTP Verified successfully! Save temporary reset token and advance to Step 3
+      setResetToken(data.resetToken || "");
+      setStep(3);
+      setError("");
+      setInfo("✅ OTP verified! You can now set your new password.");
+    } catch (err) {
+      setError(err.message || "Invalid verification code.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // STEP 3: Change Password
+  const handleChangePassword = async (e) => {
+    e?.preventDefault();
+    setError("");
 
     if (!newPassword || newPassword.length < 6) {
       setError("New password must be at least 6 characters long.");
@@ -206,16 +239,17 @@ export default function ForgotPasswordModal({
     setBusy(true);
     try {
       const res = await api.resetPassword({
+        resetToken,
         email: email.trim().toLowerCase(),
-        otp: fullOtp,
+        otp: digits.join("").trim(),
         password: newPassword,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.message || "Password reset failed. Invalid or expired code.");
+        throw new Error(data.message || "Failed to update password.");
       }
 
-      setStep(3);
+      setStep(4);
       if (onSuccess) onSuccess(email.trim().toLowerCase(), newPassword);
     } catch (err) {
       setError(err.message || "Failed to update password.");
@@ -239,28 +273,60 @@ export default function ForgotPasswordModal({
           &times;
         </button>
 
-        {/* Header */}
+        {/* Progress Step Indicator (Steps 1, 2, 3) */}
+        {step <= 3 && (
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className={`flex items-center gap-1.5 text-xs font-bold ${step === 1 ? "text-red-600" : "text-green-600"}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white ${step > 1 ? "bg-green-600" : "bg-red-600"}`}>
+                {step > 1 ? "✓" : "1"}
+              </span>
+              <span>Email</span>
+            </div>
+            <div className={`w-8 h-0.5 ${step > 1 ? "bg-green-600" : "bg-gray-200"}`}></div>
+            <div className={`flex items-center gap-1.5 text-xs font-bold ${step === 2 ? "text-red-600" : step > 2 ? "text-green-600" : "text-gray-400"}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white ${step > 2 ? "bg-green-600" : step === 2 ? "bg-red-600" : "bg-gray-300"}`}>
+                {step > 2 ? "✓" : "2"}
+              </span>
+              <span>Verify OTP</span>
+            </div>
+            <div className={`w-8 h-0.5 ${step > 2 ? "bg-green-600" : "bg-gray-200"}`}></div>
+            <div className={`flex items-center gap-1.5 text-xs font-bold ${step === 3 ? "text-red-600" : "text-gray-400"}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white ${step === 3 ? "bg-red-600" : "bg-gray-300"}`}>
+                3
+              </span>
+              <span>New Password</span>
+            </div>
+          </div>
+        )}
+
+        {/* Header Icon & Title */}
         <div className="text-center mb-5">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 text-2xl mb-3 shadow-inner">
-            {step === 3 ? "🎉" : step === 2 ? "🔑" : "🔐"}
+            {step === 4 ? "🎉" : step === 3 ? "🔒" : step === 2 ? "📩" : "🔐"}
           </div>
           <h2 className="text-xl font-extrabold text-gray-900">
-            {step === 3
-              ? "Password Reset Successful"
+            {step === 4
+              ? "Password Changed Successfully!"
+              : step === 3
+              ? "Create New Password"
               : step === 2
-              ? "Verify OTP & Set New Password"
+              ? "Verify OTP Code"
               : "Forgot Your Password?"}
           </h2>
           <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
-            {step === 3
+            {step === 4
               ? "Your password has been securely updated. You can now log in."
+              : step === 3
+              ? "OTP verified successfully! Now choose a strong new password for your account."
               : step === 2
-              ? "Enter the 6-digit OTP code sent to your Gmail and enter your new password."
-              : "Enter your registered email address and we will send a 6-digit OTP code to reset your password."}
+              ? "Enter the 6-digit OTP code sent to your Gmail to verify your identity."
+              : "Enter your registered email address and we will send a 6-digit OTP to reset your password."}
           </p>
         </div>
 
-        {/* STEP 1: Enter Email */}
+        {/* =========================================================
+            STEP 1: Enter Email & Request OTP
+            ========================================================= */}
         {step === 1 && (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
@@ -300,7 +366,7 @@ export default function ForgotPasswordModal({
               )}
             </button>
 
-            <div className="text-center pt-2">
+            <div className="text-center pt-1">
               <button
                 type="button"
                 onClick={onClose}
@@ -312,9 +378,11 @@ export default function ForgotPasswordModal({
           </form>
         )}
 
-        {/* STEP 2: Enter 6-digit OTP & New Password */}
+        {/* =========================================================
+            STEP 2: Enter & Verify OTP
+            ========================================================= */}
         {step === 2 && (
-          <form onSubmit={handleResetPassword} className="space-y-4">
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
             {info && (
               <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg p-2.5 font-medium flex items-center gap-1.5">
                 <span>📩</span>
@@ -367,6 +435,52 @@ export default function ForgotPasswordModal({
               </div>
             </div>
 
+            {error && (
+              <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2.5 font-medium flex items-center gap-1.5">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full bg-red-600 hover:bg-red-700 text-white rounded-xl py-3 font-semibold text-sm transition shadow-sm hover:shadow disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
+            >
+              {busy ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span>Verifying OTP...</span>
+                </>
+              ) : (
+                "Verify OTP Code"
+              )}
+            </button>
+
+            <div className="text-center pt-1">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="text-xs text-gray-500 hover:text-gray-800 font-medium"
+              >
+                &larr; Re-enter Email
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* =========================================================
+            STEP 3: Set New Password (Only shown after OTP is verified)
+            ========================================================= */}
+        {step === 3 && (
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            {info && (
+              <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg p-2.5 font-medium flex items-center gap-1.5">
+                <span>✅</span>
+                <span>{info}</span>
+              </div>
+            )}
+
             {/* New Password */}
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -380,6 +494,7 @@ export default function ForgotPasswordModal({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full text-sm px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 transition pr-10"
+                  autoFocus
                 />
                 <button
                   type="button"
@@ -433,24 +548,16 @@ export default function ForgotPasswordModal({
                   <span>Saving New Password...</span>
                 </>
               ) : (
-                "Save & Reset Password"
+                "Save & Update Password"
               )}
             </button>
-
-            <div className="text-center pt-1">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="text-xs text-gray-500 hover:text-gray-800 font-medium"
-              >
-                &larr; Re-enter Email
-              </button>
-            </div>
           </form>
         )}
 
-        {/* STEP 3: Success Screen */}
-        {step === 3 && (
+        {/* =========================================================
+            STEP 4: Success Screen
+            ========================================================= */}
+        {step === 4 && (
           <div className="text-center py-3 space-y-4">
             <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm font-medium">
               ✅ Your password has been changed successfully. You can now log in with your new password!
