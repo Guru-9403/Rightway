@@ -96,14 +96,21 @@ app.use(cookieParser());
    DATABASE CONNECTION
    ========================================================= */
 
+let isConnected = false;
+async function ensureDbConnected() {
+  if (mongoose.connection.readyState === 1) return;
+  if (!MONGO_URI) return;
+  try {
+    await mongoose.connect(MONGO_URI);
+    isConnected = true;
+    console.log("Connected to MongoDB successfully.");
+  } catch (err) {
+    console.error("MongoDB connection failed:", err.message);
+  }
+}
+
 if (MONGO_URI) {
-  mongoose
-    .connect(MONGO_URI)
-    .then(() => console.log("Connected to MongoDB successfully."))
-    .catch((err) => {
-      console.error("MongoDB connection failed:", err.message);
-      console.warn("Tip: Check MongoDB Atlas Network Access (IP Whitelist) if connecting from a new IP.");
-    });
+  ensureDbConnected();
 
   mongoose.connection.on("error", (err) => {
     console.error("MongoDB connection runtime error:", err.message);
@@ -112,8 +119,16 @@ if (MONGO_URI) {
     console.warn("MongoDB connection disconnected.");
   });
 } else {
-  console.warn("No MONGO_URI found in backend/.env — database features will not persist.");
+  console.warn("No MONGO_URI found in environment — database features will not persist.");
 }
+
+// Middleware to ensure DB connection for serverless function invocations
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1 && MONGO_URI) {
+    await ensureDbConnected();
+  }
+  next();
+});
 
 if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR, { recursive: true });
@@ -2801,7 +2816,11 @@ app.use((err, req, res, next) => {
 });
 
 // Start Server
-app.listen(PORT, HOST, () => {
-  console.log(`Backend server running on http://${HOST}:${PORT}`);
-  console.log(`API endpoints available under http://${HOST}:${PORT}/api/`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, HOST, () => {
+    console.log(`Backend server running on http://${HOST}:${PORT}`);
+    console.log(`API endpoints available under http://${HOST}:${PORT}/api/`);
+  });
+}
+
+export default app;
