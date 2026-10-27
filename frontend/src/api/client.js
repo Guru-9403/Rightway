@@ -1,3 +1,5 @@
+/* eslint-env browser */
+/* global fetch, localStorage */
 import { API_BASE_URL } from "../config/env";
 
 const TOKEN_KEY = "token";
@@ -14,14 +16,28 @@ export function authHeaders() {
 // Thin fetch wrapper: returns the raw Response so callers keep control over status handling.
 export function apiFetch(path, { method = "GET", body, auth = false } = {}) {
   const headers = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (auth) Object.assign(headers, authHeaders());
-  return fetch(`${API_BASE_URL}${path}`, {
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (auth) {
+    Object.assign(headers, authHeaders());
+  }
+
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const url = `${API_BASE_URL}${cleanPath}`;
+
+  const options = {
     method,
     headers,
     credentials: "include",
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  };
+
+  if (body !== undefined && method !== "GET" && method !== "HEAD") {
+    options.body = typeof body === "string" ? body : JSON.stringify(body);
+  }
+
+  const fetchFn = typeof window !== "undefined" && window.fetch ? window.fetch.bind(window) : fetch;
+  return fetchFn(url, options);
 }
 
 export const api = {
