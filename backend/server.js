@@ -743,6 +743,32 @@ app.get("/api/auth/firebase-config", (req, res) => {
   });
 });
 
+// Helper to generate a strictly unique, sequential studentId (e.g. RSB005, RSB006)
+async function generateNextStudentId() {
+  const users = await User.find(
+    { studentId: { $regex: /^RSB\d+$/i } },
+    { studentId: 1 }
+  ).lean();
+
+  let maxNum = 0;
+  for (const u of users) {
+    if (u.studentId) {
+      const match = u.studentId.match(/\d+/);
+      if (match) {
+        const num = parseInt(match[0], 10);
+        if (num > maxNum) maxNum = num;
+      }
+    }
+  }
+
+  let nextNum = maxNum + 1;
+  // Ensure the candidate studentId is completely unique in the database
+  while (await User.exists({ studentId: "RSB" + String(nextNum).padStart(3, "0") })) {
+    nextNum++;
+  }
+  return "RSB" + String(nextNum).padStart(3, "0");
+}
+
 // Registration Handler - Creates unverified account & emails 6-digit OTP
 async function handleRegister(req, res) {
   try {
@@ -796,26 +822,49 @@ async function handleRegister(req, res) {
 
     // Bcrypt cost factor 12
     const hashedPassword = await bcrypt.hash(password, 12);
-    const count = await User.countDocuments();
-    const studentId = "RSB" + String(count + 1).padStart(3, "0");
 
     const isAdminUser = ADMIN_EMAILS.includes(cleanEmail);
     const initialRole = isAdminUser ? "admin" : "student";
     const initialVerified = isAdminUser;
 
-    const user = await User.create({
-      name: name.trim(),
-      email: cleanEmail,
-      password: hashedPassword,
-      role: initialRole,
-      studentId,
-      termsAcceptedAt: new Date(),
-      createdAt: new Date(),
-      emailVerified: initialVerified,
-      isEmailVerified: initialVerified,
-      lastLoginAt: new Date(),
-      lastActiveAt: new Date(),
-    });
+    let user = null;
+    let studentId = "";
+    const maxTries = 5;
+
+    for (let attempt = 0; attempt < maxTries; attempt++) {
+      try {
+        studentId = await generateNextStudentId();
+        user = await User.create({
+          name: name.trim(),
+          email: cleanEmail,
+          password: hashedPassword,
+          role: initialRole,
+          studentId: isAdminUser ? undefined : studentId,
+          termsAcceptedAt: new Date(),
+          createdAt: new Date(),
+          emailVerified: initialVerified,
+          isEmailVerified: initialVerified,
+          lastLoginAt: new Date(),
+          lastActiveAt: new Date(),
+        });
+        break;
+      } catch (createErr) {
+        if (createErr.code === 11000) {
+          if (createErr.keyPattern?.email) {
+            return res.status(400).json({ message: "This email is already registered." });
+          }
+          if (createErr.keyPattern?.studentId) {
+            console.warn(`[handleRegister] studentId collision on ${studentId}, retrying... (attempt ${attempt + 1})`);
+            continue;
+          }
+        }
+        throw createErr;
+      }
+    }
+
+    if (!user) {
+      throw new Error("Unable to create user account. Please try again.");
+    }
 
     let otpResult = { otp: "", emailDelivered: true, emailNotice: "" };
     try {
@@ -1717,9 +1766,8 @@ app.post(["/api/auth/google", "/api/google", "/auth/google"], async (req, res) =
     }
 
     if (!user) {
-      const count = await User.countDocuments();
-      const studentId = "RSB" + String(count + 1).padStart(3, "0");
       const isAdminEmail = ADMIN_EMAILS.includes(cleanEmail);
+      const studentId = isAdminEmail ? undefined : await generateNextStudentId();
       user = await User.create({
         name: decoded.name || decoded.email.split("@")[0],
         email: cleanEmail,
