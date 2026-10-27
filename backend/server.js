@@ -402,115 +402,84 @@ function clearAuthCookies(res) {
 }
 
 /* =========================================================
-   EMAIL HELPER (SMTP / Nodemailer + Resend API Fallback)
+   EMAIL UTILITY: Nodemailer with Gmail SMTP
    ========================================================= */
 
 let smtpTransporter = null;
 
 function getSmtpTransporter() {
   if (smtpTransporter) return smtpTransporter;
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
 
-  const port = Number(process.env.SMTP_PORT) || 465;
-  const isSecure = process.env.SMTP_SECURE === "true" || (process.env.SMTP_SECURE !== "false" && port === 465);
+  const user = process.env.GMAIL_USER || process.env.SMTP_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
+
+  if (!user || !pass) return null;
 
   try {
     smtpTransporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port,
-      secure: isSecure,
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
+      service: "gmail",
       auth: {
-        user: process.env.SMTP_USER.trim(),
-        // Gmail App Passwords are 16 letters usually formatted as "xxxx xxxx xxxx xxxx"; strip any spaces
-        pass: process.env.SMTP_PASS.replace(/\s+/g, ""),
-      },
-      tls: {
-        rejectUnauthorized: process.env.NODE_ENV === "production",
+        user: user.trim(),
+        // Gmail App Passwords can be 16 characters with spaces; strip all whitespace
+        pass: pass.replace(/\s+/g, ""),
       },
     });
   } catch (err) {
-    console.error("[Nodemailer] Failed to initialize SMTP transporter:", err.message);
+    console.error("[Nodemailer] Transporter initialization error:", err.message);
     smtpTransporter = null;
   }
 
   return smtpTransporter;
 }
 
-// Verify SMTP connection on startup if credentials exist
-if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+// Verify Gmail SMTP on startup
+const startupGmailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
+const startupGmailPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
+if (startupGmailUser && startupGmailPass) {
   const initialTransporter = getSmtpTransporter();
   if (initialTransporter) {
     initialTransporter.verify((error) => {
       if (error) {
-        console.warn(`[Nodemailer] SMTP connection check failed: ${error.message}`);
+        console.warn(`[Nodemailer] Gmail verification check failed: ${error.message}`);
       } else {
-        console.log(`[Nodemailer] SMTP transporter verified & ready to send via ${process.env.SMTP_USER}`);
+        console.log(`[Nodemailer] SMTP transporter verified & ready to send via ${startupGmailUser}`);
       }
     });
   }
 }
 
-async function sendEmail({ to, subject, html, text }) {
-  // 1. Primary: If SMTP / Nodemailer is configured (e.g., Gmail App Password), deliver via Nodemailer
+// Shared sendMail utility - returns { success, messageId?, error? } and never throws uncaught exceptions
+async function sendMail({ to, subject, html, text }) {
+  const user = process.env.GMAIL_USER || process.env.SMTP_USER;
   const transporter = getSmtpTransporter();
-  if (transporter) {
-    try {
-      const mailFrom = process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER;
-      const info = await transporter.sendMail({
-        from: mailFrom,
-        to,
-        subject,
-        html,
-        text,
-      });
-      console.log(`[Nodemailer/SMTP] Email successfully delivered to ${to} (Message ID: ${info.messageId})`);
-      return { success: true, provider: "nodemailer", messageId: info.messageId };
-    } catch (smtpErr) {
-      console.warn(`[Nodemailer Warning] Could not send via SMTP (${smtpErr.message}). Trying Resend API fallback...`);
-    }
+
+  if (!transporter || !user) {
+    console.warn(`[Nodemailer] Mail not sent to ${to}: GMAIL_USER or GMAIL_APP_PASSWORD is not set in .env`);
+    return { success: false, error: "Gmail credentials not configured." };
   }
 
-  // 2. Fallback: Resend API
-  const apiKey = process.env.RESEND_API_KEY;
-  if (apiKey) {
-    const from = process.env.EMAIL_FROM || "Rightway Skill Builder <onboarding@resend.dev>";
-    const payload = { from, to, subject, html };
-    if (text) payload.text = text;
-
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
+  try {
+    const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || `"Rightway Skill Builder" <${user}>`;
+    const info = await transporter.sendMail({
+      from: fromAddress,
+      to,
+      subject,
+      html,
+      text: text || (html ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : ""),
     });
-
-    if (response.ok) {
-      console.log(`[Resend] Email successfully sent to ${to}`);
-      return { success: true, provider: "resend" };
-    }
-
-    const errText = await response.text();
-    let errMsg = errText;
-    try {
-      const parsed = JSON.parse(errText);
-      errMsg = parsed.message || errText;
-    } catch {}
-    console.error("[Resend] Failed to send email:", errMsg);
-    throw new Error(errMsg);
+    console.log(`[Nodemailer] Email delivered to ${to} (Message ID: ${info.messageId})`);
+    return { success: true, messageId: info.messageId };
+  } catch (err) {
+    console.error(`[Nodemailer Error] Failed to send email to ${to}:`, err.message);
+    return { success: false, error: err.message };
   }
-
-  throw new Error("No active email provider configured (configure SMTP_USER/SMTP_PASS or RESEND_API_KEY).");
 }
 
-// Retain sendResendEmail alias for backwards compatibility
-const sendResendEmail = sendEmail;
+// Backward compatibility aliases
+const sendEmail = sendMail;
+const sendResendEmail = sendMail;
 
-// Generate 6-digit OTP using crypto.randomInt and email with Resend
+// Generate 6-digit OTP using crypto.randomInt and email via Nodemailer
 async function generateAndSendOtp(user, reason = "verification") {
   // 6-digit OTP
   const otp = String(crypto.randomInt(100000, 1000000));
@@ -562,21 +531,20 @@ async function generateAndSendOtp(user, reason = "verification") {
   `;
 
   try {
-    await sendResendEmail({
+    const mailResult = await sendMail({
       to: user.email,
       subject: "Your Rightway Skill Builder verification code",
       html: emailHtml,
       text: emailText,
     });
-    console.log(`[Resend] Successfully delivered verification OTP to ${user.email}`);
+    emailDelivered = mailResult.success;
+    if (!mailResult.success) {
+      emailNotice = mailResult.error || "Email delivery failed.";
+    }
   } catch (emailErr) {
     emailDelivered = false;
-    console.warn(`[Resend Notice] Could not deliver verification email to ${user.email}: ${emailErr.message}`);
-    if (emailErr.message && emailErr.message.includes("testing emails to your own email address")) {
-      emailNotice = `Resend Free Mode: Email is only delivered to Resend account owner (23ca009@nandhaengg.org). To verify this account, use code: ${otp}`;
-    } else {
-      emailNotice = emailErr.message || "Failed to deliver email.";
-    }
+    emailNotice = emailErr.message || "Email delivery failed.";
+    console.error(`[Nodemailer Error] Could not deliver OTP email to ${user.email}:`, emailErr.message);
   }
 
   return { otp, emailDelivered, emailNotice };
@@ -759,7 +727,7 @@ app.get("/api/healthz", (req, res) =>
   res.json({
     status: "ok",
     database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-    emailConfigured: Boolean(process.env.SMTP_USER && process.env.SMTP_PASS),
+    emailConfigured: Boolean((process.env.GMAIL_USER || process.env.SMTP_USER) && (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS)),
   })
 );
 
@@ -876,7 +844,7 @@ async function handleRegister(req, res) {
         </ul>
       </div>
     `;
-    sendResendEmail({
+    sendMail({
       to: adminEmail,
       subject: "New user signed up (Pending Verification) - Rightway Skill Builder",
       html: adminNotificationHtml,
@@ -1439,31 +1407,29 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
     let emailNotice = "";
 
     try {
-      await sendResendEmail({
+      const mailResult = await sendMail({
         to: cleanEmail,
         subject: "Your Password Reset OTP - Rightway Skill Builder",
         html: resetHtml,
         text: `Your Rightway Skill Builder password reset code is ${otp}. It expires in 15 minutes.`,
       });
-      console.log(`[Resend] Successfully delivered password reset OTP to ${cleanEmail}`);
+      emailDelivered = mailResult.success;
+      if (!mailResult.success) {
+        emailNotice = mailResult.error || "Could not deliver email.";
+      }
     } catch (emailErr) {
       emailDelivered = false;
-      console.warn(`[Resend Notice] Could not deliver to ${cleanEmail}: ${emailErr.message}`);
+      emailNotice = emailErr.message || "Failed to deliver email.";
+      console.error(`[Nodemailer Error] Could not deliver password reset email to ${cleanEmail}:`, emailErr.message);
       console.log(`\n=================================================`);
       console.log(`🔑 [PASSWORD RESET OTP] For ${cleanEmail}: ${otp}`);
       console.log(`=================================================\n`);
-
-      if (emailErr.message && emailErr.message.includes("testing emails to your own email address")) {
-        emailNotice = "Email delivery restricted: Resend free sandbox can only deliver to the account owner (23ca009@nandhaengg.org). To send to other addresses, configure a verified domain in Resend or set Gmail SMTP (SMTP_USER & SMTP_PASS) in backend/.env.";
-      } else {
-        emailNotice = emailErr.message;
-      }
     }
 
     if (!emailDelivered) {
       return res.status(502).json({
         success: false,
-        message: `Could not deliver password reset email. ${emailNotice}`,
+        message: `Could not deliver password reset email: ${emailNotice}`,
       });
     }
 
@@ -1691,11 +1657,11 @@ app.post(["/api/auth/verify-email/request", "/api/verify-email/request"], async 
         await user.save();
 
         const verifyUrl = `${FRONTEND_URL}/verify-email?token=${rawToken}`;
-        sendResendEmail({
+        sendMail({
           to: email,
           subject: "Verify your email - Rightway Skill Builder",
           html: `<p>Please verify your email: <a href="${verifyUrl}">${verifyUrl}</a></p>`,
-        }).catch((e) => console.error(e));
+        }).catch((e) => console.error("[Nodemailer Error] Verification link email failed:", e.message));
       }
     }
     res.json({
@@ -2349,7 +2315,7 @@ app.post("/api/admin/users/:id/reset-password", requireAuth, requireAdmin, admin
       </div>
     `;
 
-    await sendResendEmail({
+    await sendMail({
       to: targetUser.email,
       subject: "Password Reset Request - Rightway Skill Builder",
       html: resetHtml,
