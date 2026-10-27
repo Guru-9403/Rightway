@@ -799,6 +799,30 @@ async function handleRegister(req, res) {
     const cleanEmail = email.toLowerCase().trim();
     const existing = await User.findOne({ email: cleanEmail });
     if (existing) {
+      // If user signed up previously but never verified their email, allow them to re-register / send fresh OTP
+      if (!existing.emailVerified && !existing.isEmailVerified) {
+        existing.name = name.trim();
+        existing.password = await bcrypt.hash(password, 12);
+        existing.termsAcceptedAt = new Date();
+        await existing.save();
+
+        let retryOtp = { otp: "", emailDelivered: true, emailNotice: "" };
+        try {
+          retryOtp = await generateAndSendOtp(existing, "registration_retry");
+        } catch (err) {
+          retryOtp = { otp: "", emailDelivered: false, emailNotice: err.message || "Email delivery failed" };
+        }
+
+        return res.status(200).json({
+          success: true,
+          requiresVerification: true,
+          email: cleanEmail,
+          emailSent: retryOtp.emailDelivered,
+          message: retryOtp.emailDelivered
+            ? "A fresh verification code has been sent to your email."
+            : `Account created. Verification email delayed: ${retryOtp.emailNotice}. Please click Resend code.`,
+        });
+      }
       return res.status(400).json({ message: "This email is already registered." });
     }
 
@@ -889,17 +913,14 @@ async function handleRegister(req, res) {
       });
     }
 
-    if (!otpResult.emailDelivered) {
-      return res.status(500).json({
-        message: `Account created, but verification email could not be delivered: ${otpResult.emailNotice}. Please contact support.`,
-      });
-    }
-
     return res.status(201).json({
       success: true,
       requiresVerification: true,
       email: cleanEmail,
-      message: "Registration successful. A 6-digit verification code has been sent to your email.",
+      emailSent: otpResult.emailDelivered,
+      message: otpResult.emailDelivered
+        ? "Registration successful. A 6-digit verification code has been sent to your email."
+        : `Account created. Verification email is delayed: ${otpResult.emailNotice}. Please click 'Resend code'.`,
     });
   } catch (err) {
     console.error("Registration error:", err);
