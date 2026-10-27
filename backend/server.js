@@ -755,7 +755,13 @@ function getLessonSlot(lessonId) {
 
 // Health Check
 app.get("/healthz", (req, res) => res.send("ok"));
-app.get("/api/healthz", (req, res) => res.json({ status: "ok" }));
+app.get("/api/healthz", (req, res) =>
+  res.json({
+    status: "ok",
+    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    emailConfigured: Boolean(process.env.SMTP_USER && process.env.SMTP_PASS),
+  })
+);
 
 // Firebase Config
 app.get("/api/auth/firebase-config", (req, res) => {
