@@ -157,6 +157,8 @@ const userSchema = new mongoose.Schema(
     emailVerificationExpiresAt: { type: Date, default: null },
     passwordResetTokenHash: { type: String, default: null, select: false },
     passwordResetExpiresAt: { type: Date, default: null },
+    passwordResetOtpAttempts: { type: Number, default: 0 },
+    passwordResetResendAvailableAt: { type: Date, default: null },
     refreshTokenHash: { type: String, default: null, select: false },
     loginAttempts: { type: Number, default: 0 },
     lockUntil: { type: Date, default: null },
@@ -406,8 +408,39 @@ function clearAuthCookies(res) {
 }
 
 /* =========================================================
-   EMAIL UTILITY: Nodemailer with Gmail SMTP
+   EMAIL SERVICE: Resend API (Primary) & Nodemailer SMTP (Fallback)
    ========================================================= */
+
+let resendClient = null;
+
+function getResendClient() {
+  if (resendClient) return resendClient;
+  // If not currently in memory, ensure latest .env values are reloaded
+  if (!process.env.RESEND_API_KEY) {
+    try {
+      require("dotenv").config({ override: true });
+    } catch {}
+  }
+  const apiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (!apiKey) return null;
+
+  try {
+    const { Resend } = require("resend");
+    resendClient = new Resend(apiKey);
+    return resendClient;
+  } catch (err) {
+    console.error("[Resend] Client initialization error:", err.message);
+    return null;
+  }
+}
+
+// Log email service status on startup
+const startupResendKey = (process.env.RESEND_API_KEY || "").trim();
+if (startupResendKey) {
+  console.log(`[Resend] API key configured. Resend will be used as primary email service.`);
+} else {
+  console.log(`[Email Service] RESEND_API_KEY not set. Using SMTP fallback if configured.`);
+}
 
 let smtpTransporter = null;
 
@@ -436,10 +469,10 @@ function getSmtpTransporter() {
   return smtpTransporter;
 }
 
-// Verify Gmail SMTP on startup
+// Verify Gmail SMTP on startup if configured
 const startupGmailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
 const startupGmailPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
-if (startupGmailUser && startupGmailPass) {
+if (startupGmailUser && startupGmailPass && !startupResendKey) {
   const initialTransporter = getSmtpTransporter();
   if (initialTransporter) {
     initialTransporter.verify((error) => {
@@ -452,30 +485,81 @@ if (startupGmailUser && startupGmailPass) {
   }
 }
 
-// Shared sendMail utility - returns { success, messageId?, error? } and never throws uncaught exceptions
+// Unified sendMail utility - delivers via Resend API first, with automatic Nodemailer SMTP fallback
 async function sendMail({ to, subject, html, text }) {
+  const plainText = text || (html ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "");
+  const cleanTo = Array.isArray(to) ? to.map((t) => String(t).trim().toLowerCase()) : [String(to).trim().toLowerCase()];
+
+  let resendErrorMsg = null;
+
+  // 1. Primary Email Provider: Resend API
+  let resendApiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (!resendApiKey) {
+    try {
+      require("dotenv").config({ override: true });
+    } catch {}
+    resendApiKey = (process.env.RESEND_API_KEY || "").trim();
+  }
+  if (resendApiKey) {
+    const resend = getResendClient();
+    if (resend) {
+      try {
+        const fromAddress =
+          (process.env.RESEND_FROM || "").trim() ||
+          "Rightway Skill Builder <onboarding@resend.dev>";
+
+        const { data, error } = await resend.emails.send({
+          from: fromAddress,
+          to: cleanTo,
+          subject,
+          html,
+          text: plainText,
+        });
+
+        if (error) {
+          resendErrorMsg = error.message;
+          if (error.message && error.message.includes("testing emails to your own email address")) {
+            console.log(`[Resend Sandbox] Recipient ${cleanTo.join(", ")} is external. Routing via SMTP fallback for instant delivery...`);
+          } else {
+            console.warn(`[Resend Notice] ${error.message}. Routing via SMTP fallback...`);
+          }
+        } else {
+          console.log(`[Resend API] Email delivered successfully to ${cleanTo.join(", ")} (ID: ${data?.id})`);
+          return { success: true, messageId: data?.id, provider: "resend" };
+        }
+      } catch (err) {
+        resendErrorMsg = err.message;
+        console.warn(`[Resend Notice] Resend error: ${err.message}. Routing via SMTP fallback...`);
+      }
+    }
+  }
+
+  // 2. Fallback Email Provider: Nodemailer SMTP (Gmail)
   const user = process.env.GMAIL_USER || process.env.SMTP_USER;
   const transporter = getSmtpTransporter();
 
   if (!transporter || !user) {
-    console.warn(`[Nodemailer] Mail not sent to ${to}: GMAIL_USER or GMAIL_APP_PASSWORD is not set in .env`);
-    return { success: false, error: "Gmail credentials not configured." };
+    console.warn(`[Email Service] Neither Resend delivered nor SMTP configured. Email to ${cleanTo.join(", ")} not sent.`);
+    return {
+      success: false,
+      error: resendErrorMsg || "Email service not configured. Please verify your domain on resend.com or configure SMTP.",
+    };
   }
 
   try {
-    const fromAddress = process.env.EMAIL_FROM || process.env.SMTP_FROM || `"Rightway Skill Builder" <${user}>`;
+    const fromAddress = process.env.SMTP_FROM || `"Rightway Skill Builder" <${user}>`;
     const info = await transporter.sendMail({
       from: fromAddress,
-      to,
+      to: cleanTo.length === 1 ? cleanTo[0] : cleanTo,
       subject,
       html,
-      text: text || (html ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : ""),
+      text: plainText,
     });
-    console.log(`[Nodemailer] Email delivered to ${to} (Message ID: ${info.messageId})`);
-    return { success: true, messageId: info.messageId };
+    console.log(`[Nodemailer Fallback] Email delivered to ${cleanTo.join(", ")} via SMTP (Message ID: ${info.messageId})`);
+    return { success: true, messageId: info.messageId, provider: "smtp" };
   } catch (err) {
-    console.error(`[Nodemailer Error] Failed to send email to ${to}:`, err.message);
-    return { success: false, error: err.message };
+    console.error(`[Nodemailer Error] Fallback SMTP failed to send email to ${cleanTo.join(", ")}:`, err.message);
+    return { success: false, error: resendErrorMsg ? `${resendErrorMsg} (SMTP fallback failed: ${err.message})` : err.message };
   }
 }
 
@@ -1391,7 +1475,7 @@ app.post(["/api/auth/logout", "/api/logout"], async (req, res) => {
   }
 });
 
-// Forgot Password Handler - Generates 6-digit OTP and emails to user
+// Forgot Password Handler - Generates 6-digit OTP and emails to user via Resend API
 app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRateLimiter, async (req, res) => {
   try {
     const parseResult = forgotPasswordSchema.safeParse(req.body);
@@ -1400,7 +1484,7 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
     }
 
     const cleanEmail = req.body.email.toLowerCase().trim();
-    const user = await User.findOne({ email: cleanEmail });
+    const user = await User.findOne({ email: cleanEmail }).select("+passwordResetTokenHash");
 
     recordAuditLog({
       userId: user ? user._id : null,
@@ -1419,10 +1503,21 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
       return res.status(403).json({ message: "This account has been suspended. Please contact support." });
     }
 
-    // Generate 6-digit numeric OTP
+    // Enforce 60-second resend cooldown
+    if (user.passwordResetResendAvailableAt && user.passwordResetResendAvailableAt > new Date()) {
+      const secondsLeft = Math.ceil((user.passwordResetResendAvailableAt.getTime() - Date.now()) / 1000);
+      return res.status(429).json({
+        message: `Please wait ${secondsLeft} second(s) before requesting another verification code.`,
+        secondsLeft,
+      });
+    }
+
+    // Generate secure 6-digit numeric OTP
     const otp = String(crypto.randomInt(100000, 1000000));
     user.passwordResetTokenHash = hashToken(otp);
     user.passwordResetExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min expiry
+    user.passwordResetOtpAttempts = 0; // Reset failed attempts count
+    user.passwordResetResendAvailableAt = new Date(Date.now() + 60 * 1000); // 60s cooldown
     await user.save();
 
     const resetHtml = `
@@ -1473,7 +1568,7 @@ app.post(["/api/auth/forgot-password", "/api/forgot-password"], forgotPasswordRa
     } catch (emailErr) {
       emailDelivered = false;
       emailNotice = emailErr.message || "Failed to deliver email.";
-      console.error(`[Nodemailer Error] Could not deliver password reset email to ${cleanEmail}:`, emailErr.message);
+      console.error(`[Email Service Error] Could not deliver password reset email to ${cleanEmail}:`, emailErr.message);
       console.log(`\n=================================================`);
       console.log(`🔑 [PASSWORD RESET OTP] For ${cleanEmail}: ${otp}`);
       console.log(`=================================================\n`);
@@ -1506,23 +1601,84 @@ app.post(["/api/auth/verify-reset-otp", "/api/verify-reset-otp"], async (req, re
 
     const cleanEmail = email.toLowerCase().trim();
     const codeClean = String(otp).trim();
-    const otpHash = hashToken(codeClean);
 
-    const user = await User.findOne({
-      email: cleanEmail,
-      passwordResetTokenHash: otpHash,
-      passwordResetExpiresAt: { $gt: new Date() },
-    }).select("+passwordResetTokenHash");
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired 6-digit OTP code. Please check and try again." });
+    if (codeClean.length !== 6) {
+      return res.status(400).json({ message: "Please enter the complete 6-digit verification code." });
     }
 
-    // Generate a temporary reset token (15 min expiry) so they can submit the new password securely
+    const user = await User.findOne({ email: cleanEmail }).select("+passwordResetTokenHash");
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or verification code." });
+    }
+
+    if (user.deletedAt) {
+      return res.status(404).json({ message: "No registered account found with this email." });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "This account has been suspended. Please contact support." });
+    }
+
+    // Check attempts limit (5 attempts max)
+    if ((user.passwordResetOtpAttempts || 0) >= 5) {
+      user.passwordResetTokenHash = null;
+      user.passwordResetExpiresAt = null;
+      await user.save();
+      return res.status(400).json({
+        message: "Too many failed attempts. This verification code has been invalidated. Please request a new code.",
+        attemptsExceeded: true,
+      });
+    }
+
+    // Check expiry (15 minutes)
+    if (!user.passwordResetExpiresAt || user.passwordResetExpiresAt < new Date()) {
+      return res.status(400).json({
+        message: "Verification code has expired. Please request a new code.",
+        expired: true,
+      });
+    }
+
+    // Verify SHA-256 hash
+    const enteredHash = hashToken(codeClean);
+    if (!user.passwordResetTokenHash || user.passwordResetTokenHash !== enteredHash) {
+      user.passwordResetOtpAttempts = (user.passwordResetOtpAttempts || 0) + 1;
+      const remaining = Math.max(0, 5 - user.passwordResetOtpAttempts);
+      if (user.passwordResetOtpAttempts >= 5) {
+        user.passwordResetTokenHash = null;
+        user.passwordResetExpiresAt = null;
+      }
+      await user.save();
+
+      if (remaining === 0) {
+        return res.status(400).json({
+          message: "Invalid OTP. You have reached the maximum number of attempts (5). Please request a new code.",
+          attemptsExceeded: true,
+          remainingAttempts: 0,
+        });
+      }
+
+      return res.status(400).json({
+        message: `Invalid verification code. ${remaining} attempt(s) remaining.`,
+        remainingAttempts: remaining,
+      });
+    }
+
+    // Single-use validation: Invalidate OTP and generate temporary verified reset token (15 min expiry)
+    // allowing password change ONLY after this successful OTP verification
     const resetToken = crypto.randomBytes(32).toString("hex");
     user.passwordResetTokenHash = hashToken(resetToken);
     user.passwordResetExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    user.passwordResetOtpAttempts = 0;
     await user.save();
+
+    recordAuditLog({
+      userId: user._id,
+      userEmail: cleanEmail,
+      userName: user.name,
+      action: "password_reset_otp_verified",
+      ip: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
 
     res.json({
       success: true,
@@ -1535,7 +1691,7 @@ app.post(["/api/auth/verify-reset-otp", "/api/verify-reset-otp"], async (req, re
   }
 });
 
-// Reset Password Handler - Verifies 6-digit OTP or verified resetToken and updates password
+// Reset Password Handler - Only allows password reset after successful OTP verification (verified resetToken)
 app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) => {
   try {
     const parseResult = resetPasswordSchema.safeParse(req.body);
@@ -1543,7 +1699,7 @@ app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) =
       return res.status(400).json({ message: parseResult.error.errors[0]?.message || "Invalid input data." });
     }
 
-    const { email, otp, token, resetToken, password, newPassword } = req.body;
+    const { email, token, resetToken, password, newPassword } = req.body;
     const finalPassword = password || newPassword;
     const finalToken = token || resetToken;
 
@@ -1551,41 +1707,28 @@ app.post(["/api/auth/reset-password", "/api/reset-password"], async (req, res) =
       return res.status(400).json({ message: "Password must be at least 6 characters long." });
     }
 
-    let user = null;
+    if (!finalToken) {
+      return res.status(400).json({ message: "Verification token is required. Please verify your OTP code first." });
+    }
 
-    if (finalToken) {
-      const tokenHash = hashToken(finalToken);
-      user = await User.findOne({
-        passwordResetTokenHash: tokenHash,
-        passwordResetExpiresAt: { $gt: new Date() },
-      }).select("+passwordResetTokenHash");
+    const tokenHash = hashToken(finalToken);
+    const user = await User.findOne({
+      passwordResetTokenHash: tokenHash,
+      passwordResetExpiresAt: { $gt: new Date() },
+    }).select("+passwordResetTokenHash");
 
-      if (!user) {
-        return res.status(400).json({ message: "Invalid or expired reset session. Please verify OTP again." });
-      }
-    } else if (otp && email) {
-      const cleanEmail = email.toLowerCase().trim();
-      const codeClean = String(otp).trim();
-      const otpHash = hashToken(codeClean);
-
-      user = await User.findOne({
-        email: cleanEmail,
-        passwordResetTokenHash: otpHash,
-        passwordResetExpiresAt: { $gt: new Date() },
-      }).select("+passwordResetTokenHash");
-
-      if (!user) {
-        return res.status(400).json({ message: "Invalid or expired 6-digit verification code. Please request a new code." });
-      }
-    } else {
-      return res.status(400).json({ message: "Verification token or OTP code is required." });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired reset session. Please verify OTP again." });
     }
 
     // Bcrypt cost 12
     user.password = await bcrypt.hash(finalPassword, 12);
+    // Single-use validation: Invalidate reset token and clear reset state
     user.passwordResetTokenHash = null;
     user.passwordResetExpiresAt = null;
-    user.refreshTokenHash = null; // Revoke existing sessions on password reset
+    user.passwordResetOtpAttempts = 0;
+    user.passwordResetResendAvailableAt = null;
+    user.refreshTokenHash = null; // Revoke all existing sessions
     user.loginAttempts = 0;
     user.lockUntil = null;
     user.emailVerified = true;
