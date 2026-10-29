@@ -408,7 +408,7 @@ async function sendMail({ to, subject, html, text }) {
       try {
         const fromAddress =
           (process.env.RESEND_FROM || "").trim() ||
-          "Rightway Skill Builder <onboarding@resend.dev>";
+          "Rightway Skill Builder <no-reply@rightwayinstitute.com>";
 
         const { data, error } = await resend.emails.send({
           from: fromAddress,
