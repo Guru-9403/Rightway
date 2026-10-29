@@ -17,13 +17,13 @@ const { z } = require("zod");
 const app = express();
 app.set("trust proxy", 1);
 
+const isProd = process.env.NODE_ENV === "production";
 const PORT = Number(process.env.PORT) || 5000;
 const HOST = process.env.HOST || "0.0.0.0";
 const JWT_SECRET = process.env.JWT_SECRET || "rightway_access_secret_key_default";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "rightway_refresh_secret_key_default";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
-const MONGO_URI = process.env.MONGO_URI;
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:5173").replace(/\/$/, "");
 const DIST_DIR = path.resolve(process.env.FRONTEND_DIST || path.join(__dirname, "..", "frontend", "dist"));
@@ -70,16 +70,15 @@ app.use(
       if (!origin) return callback(null, true);
       const cleanOrigin = origin.replace(/\/$/, "");
       if (
-        !isProd ||
         allowedOrigins.includes(cleanOrigin) ||
         allowedOrigins.includes("*") ||
         /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(cleanOrigin) ||
-        /^https:\/\/([a-z0-9-]+)\.vercel\.app$/.test(cleanOrigin) ||
-        /^https:\/\/([a-z0-9-]+)\.netlify\.app$/.test(cleanOrigin)
+        /\.vercel\.app$/.test(cleanOrigin) ||
+        /\.netlify\.app$/.test(cleanOrigin)
       ) {
         return callback(null, true);
       }
-      return callback(null, false);
+      return callback(null, true);
     },
     credentials: true,
   })
