@@ -253,8 +253,6 @@ const adminUpdateUserSchema = z.object({
    TOKEN & COOKIE HELPERS
    ========================================================= */
 
-const isProd = process.env.NODE_ENV === "production";
-
 const cookieBaseOptions = {
   httpOnly: true,
   secure: isProd,
