@@ -5,11 +5,13 @@
   "description": "API + static + video server for the Rightway Skill Builder React app",
   "main": "server.js",
   "scripts": {
-    "build": "echo Build complete",
+    "build": "npm run postinstall",
+    "postinstall": "prisma generate --schema=prisma/schema.prisma",
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
   "dependencies": {
+    "@prisma/client": "^6.4.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -19,13 +21,10 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "nodemailer": "^10.2.1",
+    "prisma": "^6.4.0",
     "resend": "^6.35.0",
     "xlsx": "^0.18.5",
-    "zod": "^3.24.2",
-    "@prisma/client": "^6.4.0"
-  },
-  "devDependencies": {
-    "prisma": "^6.4.0"
+    "zod": "^3.24.2"
   },
   "engines": {
     "node": ">=18"
