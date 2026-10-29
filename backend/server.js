@@ -96,24 +96,19 @@ app.use(cookieParser());
    DATABASE CONNECTION
    ========================================================= */
 
-if (MONGO_URI) {
-  mongoose
-    .connect(MONGO_URI)
-    .then(() => console.log("Connected to MongoDB successfully."))
-    .catch((err) => {
-      console.error("MongoDB connection failed:", err.message);
-      console.warn("Tip: Check MongoDB Atlas Network Access (IP Whitelist) if connecting from a new IP.");
-    });
+const { prisma, User, AuditLog, Enquiry } = require("./prismaModels");
 
-  mongoose.connection.on("error", (err) => {
-    console.error("MongoDB connection runtime error:", err.message);
+let isDbConnected = false;
+prisma
+  .$connect()
+  .then(() => {
+    isDbConnected = true;
+    console.log("Connected to Supabase PostgreSQL successfully via Prisma.");
+  })
+  .catch((err) => {
+    isDbConnected = false;
+    console.error("Supabase PostgreSQL connection failed via Prisma:", err.message);
   });
-  mongoose.connection.on("disconnected", () => {
-    console.warn("MongoDB connection disconnected.");
-  });
-} else {
-  console.warn("No MONGO_URI found in backend/.env — database features will not persist.");
-}
 
 if (!fs.existsSync(VIDEOS_DIR)) {
   try {
@@ -122,87 +117,6 @@ if (!fs.existsSync(VIDEOS_DIR)) {
     console.warn("Could not create VIDEOS_DIR:", err.message);
   }
 }
-
-/* =========================================================
-   SCHEMAS & MODELS
-   ========================================================= */
-
-const emptySlots = (count) =>
-  Array.from({ length: count }, () => ({ taskCompleted: false, testPassed: false }));
-
-const userSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, select: false }, // Never return password hash in queries by default
-    role: { type: String, default: "student" }, // Default "student"
-    studentId: { type: String },
-    enrolledCourse: { type: String, default: "Full Stack Web Development" },
-    xp: { type: Number, default: 0 },
-    statuses: { type: Array, default: () => emptySlots(10) },
-    cssStatuses: { type: Array, default: () => emptySlots(12) },
-    jsStatuses: { type: Array, default: () => emptySlots(6) },
-    medicalStatuses: { type: Array, default: () => emptySlots(15) },
-    graphicDesignStatuses: { type: Array, default: () => emptySlots(12) },
-    certificateId: { type: String, default: null },
-    certificateIssuedAt: { type: Date, default: null },
-    termsAcceptedAt: { type: Date, default: null },
-    emailVerified: { type: Boolean, default: false },
-    isEmailVerified: { type: Boolean, default: false },
-    otpHash: { type: String, default: null, select: false },
-    otpExpiresAt: { type: Date, default: null },
-    otpAttempts: { type: Number, default: 0 },
-    otpResendAvailableAt: { type: Date, default: null },
-    emailVerificationTokenHash: { type: String, default: null, select: false },
-    emailVerificationExpiresAt: { type: Date, default: null },
-    passwordResetTokenHash: { type: String, default: null, select: false },
-    passwordResetExpiresAt: { type: Date, default: null },
-    passwordResetOtpAttempts: { type: Number, default: 0 },
-    passwordResetResendAvailableAt: { type: Date, default: null },
-    refreshTokenHash: { type: String, default: null, select: false },
-    loginAttempts: { type: Number, default: 0 },
-    lockUntil: { type: Date, default: null },
-    loginCount: { type: Number, default: 1 },
-    isBlocked: { type: Boolean, default: false },
-    deletedAt: { type: Date, default: null },
-    authProvider: { type: String, default: "email" },
-    lastLoginAt: { type: Date, default: Date.now },
-    lastActiveAt: { type: Date, default: Date.now },
-  },
-  { timestamps: true }
-);
-
-const User = mongoose.model("User", userSchema);
-
-/* =========================================================
-   AUDIT LOG SCHEMA (Append-Only / Immutable)
-   ========================================================= */
-
-const auditLogSchema = new mongoose.Schema(
-  {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-    userEmail: { type: String, default: "" },
-    userName: { type: String, default: "" },
-    adminId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-    adminEmail: { type: String, default: "" },
-    action: { type: String, required: true, index: true },
-    ip: { type: String, default: "" },
-    userAgent: { type: String, default: "" },
-    details: { type: mongoose.Schema.Types.Mixed, default: {} },
-    timestamp: { type: Date, default: Date.now, index: true },
-  },
-  { timestamps: { createdAt: "timestamp", updatedAt: false } }
-);
-
-// RULE: Audit logs are strictly append-only: no edits or deletes allowed
-auditLogSchema.pre(
-  ["updateOne", "updateMany", "findOneAndUpdate", "deleteOne", "deleteMany", "findOneAndDelete"],
-  function () {
-    throw new Error("Audit logs are append-only and cannot be modified or deleted.");
-  }
-);
-
-const AuditLog = mongoose.model("AuditLog", auditLogSchema);
 
 // Active Server-Sent Events (SSE) connections for live stream
 const sseClients = new Set();
@@ -281,19 +195,7 @@ async function cleanupUnverifiedAccounts() {
 setTimeout(cleanupUnverifiedAccounts, 5000);
 setInterval(cleanupUnverifiedAccounts, 12 * 60 * 60 * 1000);
 
-const enquirySchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String },
-    course: { type: String },
-    message: { type: String },
-    status: { type: String, default: "New" },
-  },
-  { timestamps: true }
-);
-
-const Enquiry = mongoose.model("Enquiry", enquirySchema);
+// Enquiry model is provided by prismaModels.js
 
 /* =========================================================
    ZOD VALIDATION SCHEMAS
@@ -814,7 +716,7 @@ app.get("/healthz", (req, res) => res.send("ok"));
 app.get("/api/healthz", (req, res) =>
   res.json({
     status: "ok",
-    database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+    database: isDbConnected ? "connected" : "disconnected",
     emailConfigured: Boolean((process.env.GMAIL_USER || process.env.SMTP_USER) && (process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS)),
   })
 );
@@ -2355,9 +2257,7 @@ app.delete("/api/admin/users/:id", requireAuth, requireAdmin, adminRateLimiter, 
     const rawId = req.params.id;
     let targetUser = null;
 
-    if (mongoose.Types.ObjectId.isValid(rawId)) {
-      targetUser = await User.findById(rawId);
-    }
+    targetUser = await User.findById(rawId);
     if (!targetUser) {
       targetUser = await User.findOne({ $or: [{ studentId: rawId }, { email: rawId }] });
     }
@@ -2434,9 +2334,7 @@ app.post("/api/admin/users/:id/restore", requireAuth, requireAdmin, adminRateLim
   try {
     const rawId = req.params.id;
     let targetUser = null;
-    if (mongoose.Types.ObjectId.isValid(rawId)) {
-      targetUser = await User.findById(rawId);
-    }
+    targetUser = await User.findById(rawId);
     if (!targetUser) {
       targetUser = await User.findOne({ $or: [{ studentId: rawId }, { email: rawId }] });
     }

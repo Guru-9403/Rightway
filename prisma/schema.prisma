@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                             String    @id @default(uuid())
+  name                           String
+  email                          String    @unique
+  password                       String?
+  role                           String    @default("student")
+  studentId                      String?   @unique
+  enrolledCourse                 String    @default("Full Stack Web Development")
+  xp                             Int       @default(0)
+
+  // Lesson Progress Tracking (JSON arrays preserving { taskCompleted, testPassed })
+  statuses                       Json      @default("[]")
+  cssStatuses                    Json      @default("[]")
+  jsStatuses                     Json      @default("[]")
+  medicalStatuses                Json      @default("[]")
+  graphicDesignStatuses          Json      @default("[]")
+
+  // Certification
+  certificateId                  String?
+  certificateIssuedAt            DateTime?
+  termsAcceptedAt                DateTime?
+
+  // Verification & Security
+  emailVerified                  Boolean   @default(false)
+  isEmailVerified                Boolean   @default(false)
+  otpHash                        String?
+  otpExpiresAt                   DateTime?
+  otpAttempts                    Int       @default(0)
+  otpResendAvailableAt           DateTime?
+
+  emailVerificationTokenHash     String?
+  emailVerificationExpiresAt     DateTime?
+
+  passwordResetTokenHash         String?
+  passwordResetExpiresAt         DateTime?
+  passwordResetOtpAttempts       Int       @default(0)
+  passwordResetResendAvailableAt DateTime?
+
+  refreshTokenHash               String?
+  loginAttempts                  Int       @default(0)
+  lockUntil                      DateTime?
+  loginCount                     Int       @default(1)
+  isBlocked                      Boolean   @default(false)
+  deletedAt                      DateTime?
+  authProvider                   String    @default("email")
+
+  lastLoginAt                    DateTime  @default(now())
+  lastActiveAt                   DateTime  @default(now())
+  createdAt                      DateTime  @default(now())
+  updatedAt                      DateTime  @updatedAt
+
+  // Relationships
+  auditLogs                      AuditLog[] @relation("UserAuditLogs")
+  adminAuditLogs                 AuditLog[] @relation("AdminAuditLogs")
+
+  @@index([email])
+  @@index([studentId])
+  @@index([role])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([lastActiveAt])
+  @@map("users")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation("UserAuditLogs", fields: [userId], references: [id], onDelete: SetNull)
+  userEmail  String   @default("")
+  userName   String   @default("")
+
+  adminId    String?
+  admin      User?    @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: SetNull)
+  adminEmail String   @default("")
+
+  action     String
+  ip         String   @default("")
+  userAgent  String   @default("")
+  details    Json     @default("{}")
+  timestamp  DateTime @default(now())
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([action])
+  @@index([timestamp(sort: Desc)])
+  @@index([action, timestamp(sort: Desc)])
+  @@map("audit_logs")
+}
+
+model Enquiry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  course    String?
+  message   String?
+  status    String   @default("New")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("enquiries")
+}
