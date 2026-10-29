@@ -359,6 +359,9 @@ function getSmtpTransporter() {
         // Gmail App Passwords can be 16 characters with spaces; strip all whitespace
         pass: pass.replace(/\s+/g, ""),
       },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 5000,
     });
   } catch (err) {
     console.error("[Nodemailer] Transporter initialization error:", err.message);
