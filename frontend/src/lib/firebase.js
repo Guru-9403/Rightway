@@ -14,6 +14,9 @@ export function initFirebase() {
       const res = await api.firebaseConfig();
       if (res.ok) {
         const config = await res.json();
+        if (!config || !config.apiKey || config.apiKey.trim() === "") {
+          return null;
+        }
         // Loaded on demand so the Firebase SDK stays out of the main bundle.
         const [{ initializeApp, getApps }, { getAuth, GoogleAuthProvider, signInWithPopup }] = await Promise.all([
           import("firebase/app"),
