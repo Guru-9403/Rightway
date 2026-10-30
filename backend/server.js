@@ -307,9 +307,12 @@ function clearAuthCookies(res) {
 }
 
 /* =========================================================
-   EMAIL SERVICE: Resend API (Primary) & Nodemailer SMTP (Fallback)
+   EMAIL SERVICE: Nodemailer SMTP (Primary)
+   (Resend API functions commented out as requested)
    ========================================================= */
 
+/*
+// [Resend functions commented out - switching to Nodemailer]
 let resendClient = null;
 
 function getResendClient() {
@@ -333,13 +336,11 @@ function getResendClient() {
   }
 }
 
-// Log email service status on startup
 const startupResendKey = (process.env.RESEND_API_KEY || "").trim();
 if (startupResendKey) {
-  console.log(`[Resend] API key configured. Resend will be used as primary email service.`);
-} else {
-  console.log(`[Email Service] RESEND_API_KEY not set. Using SMTP fallback if configured.`);
+  console.log(`[Resend] API key configured. (Currently disabled in favor of Nodemailer)`);
 }
+*/
 
 let smtpTransporter = null;
 
@@ -359,9 +360,9 @@ function getSmtpTransporter() {
         // Gmail App Passwords can be 16 characters with spaces; strip all whitespace
         pass: pass.replace(/\s+/g, ""),
       },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 5000,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     });
   } catch (err) {
     console.error("[Nodemailer] Transporter initialization error:", err.message);
@@ -371,10 +372,10 @@ function getSmtpTransporter() {
   return smtpTransporter;
 }
 
-// Verify Gmail SMTP on startup if configured
+// Verify Gmail SMTP on startup
 const startupGmailUser = process.env.GMAIL_USER || process.env.SMTP_USER;
 const startupGmailPass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
-if (startupGmailUser && startupGmailPass && !startupResendKey) {
+if (startupGmailUser && startupGmailPass) {
   const initialTransporter = getSmtpTransporter();
   if (initialTransporter) {
     initialTransporter.verify((error) => {
@@ -385,16 +386,17 @@ if (startupGmailUser && startupGmailPass && !startupResendKey) {
       }
     });
   }
+} else {
+  console.log(`[Email Service] Nodemailer SMTP not configured (GMAIL_USER or GMAIL_APP_PASSWORD missing).`);
 }
 
-// Unified sendMail utility - delivers via Resend API first, with automatic Nodemailer SMTP fallback
+// Unified sendMail utility - sends directly via Nodemailer SMTP
 async function sendMail({ to, subject, html, text }) {
   const plainText = text || (html ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "");
   const cleanTo = Array.isArray(to) ? to.map((t) => String(t).trim().toLowerCase()) : [String(to).trim().toLowerCase()];
 
-  let resendErrorMsg = null;
-
-  // 1. Primary Email Provider: Resend API
+  /*
+  // [Resend sending logic commented out - testing Nodemailer]
   let resendApiKey = (process.env.RESEND_API_KEY || "").trim();
   if (!resendApiKey) {
     try {
@@ -419,32 +421,27 @@ async function sendMail({ to, subject, html, text }) {
         });
 
         if (error) {
-          resendErrorMsg = error.message;
-          if (error.message && error.message.includes("testing emails to your own email address")) {
-            console.log(`[Resend Sandbox] Recipient ${cleanTo.join(", ")} is external. Routing via SMTP fallback for instant delivery...`);
-          } else {
-            console.warn(`[Resend Notice] ${error.message}. Routing via SMTP fallback...`);
-          }
+          console.warn(`[Resend Notice] ${error.message}.`);
         } else {
           console.log(`[Resend API] Email delivered successfully to ${cleanTo.join(", ")} (ID: ${data?.id})`);
           return { success: true, messageId: data?.id, provider: "resend" };
         }
       } catch (err) {
-        resendErrorMsg = err.message;
-        console.warn(`[Resend Notice] Resend error: ${err.message}. Routing via SMTP fallback...`);
+        console.warn(`[Resend Notice] Resend error: ${err.message}.`);
       }
     }
   }
+  */
 
-  // 2. Fallback Email Provider: Nodemailer SMTP (Gmail)
+  // Send via Nodemailer SMTP (Gmail)
   const user = process.env.GMAIL_USER || process.env.SMTP_USER;
   const transporter = getSmtpTransporter();
 
   if (!transporter || !user) {
-    console.warn(`[Email Service] Neither Resend delivered nor SMTP configured. Email to ${cleanTo.join(", ")} not sent.`);
+    console.warn(`[Nodemailer] SMTP not configured. Email to ${cleanTo.join(", ")} not sent.`);
     return {
       success: false,
-      error: resendErrorMsg || "Email service not configured. Please verify your domain on resend.com or configure SMTP.",
+      error: "Nodemailer SMTP not configured. Please ensure GMAIL_USER and GMAIL_APP_PASSWORD are set in backend/.env.",
     };
   }
 
@@ -457,11 +454,11 @@ async function sendMail({ to, subject, html, text }) {
       html,
       text: plainText,
     });
-    console.log(`[Nodemailer Fallback] Email delivered to ${cleanTo.join(", ")} via SMTP (Message ID: ${info.messageId})`);
-    return { success: true, messageId: info.messageId, provider: "smtp" };
+    console.log(`[Nodemailer] Email delivered successfully to ${cleanTo.join(", ")} (Message ID: ${info.messageId})`);
+    return { success: true, messageId: info.messageId, provider: "nodemailer" };
   } catch (err) {
-    console.error(`[Nodemailer Error] Fallback SMTP failed to send email to ${cleanTo.join(", ")}:`, err.message);
-    return { success: false, error: resendErrorMsg ? `${resendErrorMsg} (SMTP fallback failed: ${err.message})` : err.message };
+    console.error(`[Nodemailer Error] Failed to send email to ${cleanTo.join(", ")}:`, err.message);
+    return { success: false, error: err.message };
   }
 }
 
