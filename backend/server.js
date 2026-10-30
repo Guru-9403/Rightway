@@ -362,9 +362,9 @@ function getSmtpTransporter() {
         // Gmail App Passwords can be 16 characters with spaces; strip all whitespace
         pass: pass.replace(/\s+/g, ""),
       },
-      connectionTimeout: 25000,
-      greetingTimeout: 25000,
-      socketTimeout: 25000,
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
+      socketTimeout: 6000,
     });
   } catch (err) {
     console.error("[Nodemailer] Transporter initialization error:", err.message);
@@ -435,9 +435,9 @@ async function sendMail({ to, subject, html, text }) {
           user: user.trim(),
           pass: pass.replace(/\s+/g, ""),
         },
-        connectionTimeout: 25000,
-        greetingTimeout: 25000,
-        socketTimeout: 25000,
+        connectionTimeout: 6000,
+        greetingTimeout: 6000,
+        socketTimeout: 6000,
       });
       const info = await fallbackTransporter.sendMail({
         from: fromAddress,
