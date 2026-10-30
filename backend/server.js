@@ -354,15 +354,17 @@ function getSmtpTransporter() {
 
   try {
     smtpTransporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
       auth: {
         user: user.trim(),
         // Gmail App Passwords can be 16 characters with spaces; strip all whitespace
         pass: pass.replace(/\s+/g, ""),
       },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
+      connectionTimeout: 25000,
+      greetingTimeout: 25000,
+      socketTimeout: 25000,
     });
   } catch (err) {
     console.error("[Nodemailer] Transporter initialization error:", err.message);
@@ -390,63 +392,28 @@ if (startupGmailUser && startupGmailPass) {
   console.log(`[Email Service] Nodemailer SMTP not configured (GMAIL_USER or GMAIL_APP_PASSWORD missing).`);
 }
 
-// Unified sendMail utility - sends directly via Nodemailer SMTP
+// Unified sendMail utility - sends directly via Nodemailer SMTP with automatic port 587 fallback
 async function sendMail({ to, subject, html, text }) {
   const plainText = text || (html ? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "");
   const cleanTo = Array.isArray(to) ? to.map((t) => String(t).trim().toLowerCase()) : [String(to).trim().toLowerCase()];
 
-  /*
-  // [Resend sending logic commented out - testing Nodemailer]
-  let resendApiKey = (process.env.RESEND_API_KEY || "").trim();
-  if (!resendApiKey) {
-    try {
-      require("dotenv").config({ override: true });
-    } catch {}
-    resendApiKey = (process.env.RESEND_API_KEY || "").trim();
-  }
-  if (resendApiKey) {
-    const resend = getResendClient();
-    if (resend) {
-      try {
-        const fromAddress =
-          (process.env.RESEND_FROM || "").trim() ||
-          "Rightway Skill Builder <no-reply@rightwayinstitute.com>";
-
-        const { data, error } = await resend.emails.send({
-          from: fromAddress,
-          to: cleanTo,
-          subject,
-          html,
-          text: plainText,
-        });
-
-        if (error) {
-          console.warn(`[Resend Notice] ${error.message}.`);
-        } else {
-          console.log(`[Resend API] Email delivered successfully to ${cleanTo.join(", ")} (ID: ${data?.id})`);
-          return { success: true, messageId: data?.id, provider: "resend" };
-        }
-      } catch (err) {
-        console.warn(`[Resend Notice] Resend error: ${err.message}.`);
-      }
-    }
-  }
-  */
-
   // Send via Nodemailer SMTP (Gmail)
   const user = process.env.GMAIL_USER || process.env.SMTP_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS;
   const transporter = getSmtpTransporter();
 
-  if (!transporter || !user) {
+  if (!transporter || !user || !pass) {
     console.warn(`[Nodemailer] SMTP not configured. Email to ${cleanTo.join(", ")} not sent.`);
     return {
       success: false,
-      error: "Nodemailer SMTP not configured. Please ensure GMAIL_USER and GMAIL_APP_PASSWORD are set in backend/.env.",
+      error: "Nodemailer SMTP not configured. Please ensure GMAIL_USER and GMAIL_APP_PASSWORD are set.",
     };
   }
 
+  const fromAddress = process.env.SMTP_FROM || `"Rightway Skill Builder" <${user}>`;
+
+  // 1. Try Port 465 (SSL)
   try {
-    const fromAddress = process.env.SMTP_FROM || `"Rightway Skill Builder" <${user}>`;
     const info = await transporter.sendMail({
       from: fromAddress,
       to: cleanTo.length === 1 ? cleanTo[0] : cleanTo,
@@ -457,8 +424,34 @@ async function sendMail({ to, subject, html, text }) {
     console.log(`[Nodemailer] Email delivered successfully to ${cleanTo.join(", ")} (Message ID: ${info.messageId})`);
     return { success: true, messageId: info.messageId, provider: "nodemailer" };
   } catch (err) {
-    console.error(`[Nodemailer Error] Failed to send email to ${cleanTo.join(", ")}:`, err.message);
-    return { success: false, error: err.message };
+    console.warn(`[Nodemailer Port 465 failed] ${err.message}. Retrying via Port 587 (STARTTLS)...`);
+    // 2. Try Port 587 (STARTTLS fallback)
+    try {
+      const fallbackTransporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
+        auth: {
+          user: user.trim(),
+          pass: pass.replace(/\s+/g, ""),
+        },
+        connectionTimeout: 25000,
+        greetingTimeout: 25000,
+        socketTimeout: 25000,
+      });
+      const info = await fallbackTransporter.sendMail({
+        from: fromAddress,
+        to: cleanTo.length === 1 ? cleanTo[0] : cleanTo,
+        subject,
+        html,
+        text: plainText,
+      });
+      console.log(`[Nodemailer Port 587] Email delivered successfully to ${cleanTo.join(", ")} (Message ID: ${info.messageId})`);
+      return { success: true, messageId: info.messageId, provider: "nodemailer-587" };
+    } catch (err587) {
+      console.error(`[Nodemailer Error] All SMTP attempts failed for ${cleanTo.join(", ")}:`, err587.message);
+      return { success: false, error: err587.message };
+    }
   }
 }
 
